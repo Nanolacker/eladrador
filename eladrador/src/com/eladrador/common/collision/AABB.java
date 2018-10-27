@@ -23,12 +23,12 @@ public abstract class AABB {
 	/**
 	 * The period by which {@code AABB}s will be drawn.
 	 */
-	public static final double DRAW_PERIOD = 0.1;
+	private static final double DRAW_PERIOD = 0.1;
 	/**
 	 * How thick drawings of {@code AABB}s will be. The greater this value, the less
 	 * space there is between particles used to draw AABBs.
 	 */
-	public static final double DRAW_THICKNESS = 4.0;
+	private static final double DRAW_THICKNESS = 4.0;
 
 	/**
 	 * Whether this {@code AABB} will collide and respond to other {@code AABB}s.
@@ -48,7 +48,7 @@ public abstract class AABB {
 	 */
 	private Location center;
 	/**
-	 * Represents the dimensions (i.e. lengths of this {@code AABB}).
+	 * Represents the dimensions (i.e. lengths of the edges of this {@code AABB}).
 	 */
 	private Vector dimensions;
 	/**
@@ -102,17 +102,17 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Constructs a new axis-aligned bounding box. The {@code max} value on any axis
-	 * must be greater than that axis's {@code min} value. Be sure to call
-	 * setActive(boolean) to enable it after construction.
+	 * Constructs a new axis-aligned bounding box. The max value on any axis must be
+	 * greater than that axis's min value. Be sure to call {@code setActive} to
+	 * activate this {@code AABB} after construction.
 	 * 
-	 * @param world the world this box will exist in
-	 * @param xMin  the minimum x value that exists within this box
-	 * @param xMax  the maximum x value that exists within this box
-	 * @param yMin  the minimum y value that exists within this box
-	 * @param yMax  the maximum y value that exists within this box
-	 * @param zMin  the minimum z value that exists within this box
-	 * @param zMax  the maximum z value that exists within this box
+	 * @param world the {@code World} this {@code AABB} will exist in
+	 * @param xMin  the minimum x value that exists within this {@code AABB}
+	 * @param xMax  the maximum x value that exists within this {@code AABB}
+	 * @param yMin  the minimum y value that exists within this {@code AABB}
+	 * @param yMax  the maximum y value that exists within this {@code AABB}
+	 * @param zMin  the minimum z value that exists within this {@code AABB}
+	 * @param zMax  the maximum z value that exists within this {@code AABB}
 	 */
 	public AABB(World world, double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
 		this.world = world;
@@ -141,14 +141,15 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Constructs a new axis-aligned bounding box. Any length of the box must be
-	 * greater than 0. Be sure to call setActive(boolean) to enable it after
-	 * construction.
+	 * Constructs a new axis-aligned bounding box. Any length of this {@code AABB}
+	 * must be greater than 0. Be sure to call {@code setActive} to activate
+	 * {@code AABB} after construction.
 	 * 
-	 * @param center  the location, including the world, at the center of this box
-	 * @param lengthX the length of this box on the x-axis
-	 * @param lengthY the length of this box on the y-axis
-	 * @param lengthZ the length of this box on the z-axis
+	 * @param center  the {@code Location}, including the {@code World}, at the
+	 *                center of this {@code AABB}
+	 * @param lengthX the length of this {@code AABB} on the x-axis
+	 * @param lengthY the length of this {@code AABB} on the y-axis
+	 * @param lengthZ the length of this {@code AABB} on the z-axis
 	 */
 	public AABB(Location center, double lengthX, double lengthY, double lengthZ) {
 		this.world = center.getWorld();
@@ -185,12 +186,15 @@ public abstract class AABB {
 		collidingAABBs = new ArrayList<AABB>();
 	}
 
+	/**
+	 * Returns whether this {@code AABB} will interact with other {@code AABB}s.
+	 */
 	public boolean getActive() {
 		return active;
 	}
 
 	/**
-	 * Sets whether this AABBs will interact with other AABBs.
+	 * Sets whether this {@code AABB} will interact with other {@code AABB}s.
 	 */
 	public void setActive(boolean active) {
 		this.active = active;
@@ -208,16 +212,16 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Returns the world this box exists in.
+	 * Returns the {@code World} this {@code AABB} exists in.
 	 */
 	public World getWorld() {
 		return world;
 	}
 
 	/**
-	 * Sets the world that this box will exist in.
+	 * Sets the {@code World} that this {@code AABB} will exist in.
 	 * 
-	 * @param world the world this box will exist in
+	 * @param world the {@code World} this {@code AABB} will exist in
 	 */
 	public void setWorld(World world) {
 		this.world = world;
@@ -253,18 +257,20 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Returns the location of the point that exists at the center of this box.
+	 * Returns the {@code Location} of the point that exists at the center of this
+	 * {@code AABB}.
 	 * 
-	 * @return the location of the point that exists at the center of this box
+	 * @return the {@code Location} of the point that exists at the center of this
+	 *         {@code AABB}
 	 */
 	public Location getCenter() {
 		return center;
 	}
 
 	/**
-	 * Sets the center of this box and updates all bounds accordingly.
+	 * Sets the center of this {@code AABB} and updates all bounds accordingly.
 	 * 
-	 * @param center the new center of the box
+	 * @param center the new center of this {@code AABB}
 	 */
 	public void setCenter(Location center) {
 		this.center = center;
@@ -277,18 +283,16 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Returns the dimensions of this box.
-	 * 
-	 * @return the dimensions of this box
+	 * Returns the dimensions of this {@code AABB}.
 	 */
 	public Vector getDimensions() {
 		return dimensions;
 	}
 
 	/**
-	 * Sets the dimensions of the box.
+	 * Sets the dimensions of the {@code AABB}.
 	 * 
-	 * @param dimensions the new dimensions of this box
+	 * @param dimensions the new dimensions of this {@code AABB}
 	 */
 	public void setDimensions(Vector dimensions) {
 		this.dimensions = dimensions;
@@ -300,9 +304,13 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Translates this box.
+	 * Translates this {@code AABB}. Translating this {@code AABB} so that it
+	 * overlaps with any other {@code AABB}s will result in {@code onCollideEnter}
+	 * being called for each {@code AABB}. Conversely, translating this {@code AABB}
+	 * so that it does not overlap with any {@code AABB}s that previously overlapped
+	 * will result in {@code onCollideExit} being called for each {@code AABB}.
 	 * 
-	 * @param translate how much to translate this box
+	 * @param translate how much to translate this {@code AABB}
 	 */
 	public void translate(Vector translate) {
 		double x = translate.getX();
@@ -321,20 +329,26 @@ public abstract class AABB {
 		}
 	}
 
+	/**
+	 * Adds a tag to this {@code AABB}.
+	 */
 	public void addTag(String tag) {
 		tags.add(tag);
 	}
 
+	/**
+	 * Returns the tags of this {@code AABB}.
+	 */
 	public ArrayList<String> getTags() {
 		return tags;
 	}
 
 	/**
-	 * Returns whether this box encompasses a point (in other words, whether this
-	 * point exists within the volume of this box).
+	 * Returns whether this {@code AABB} encompasses a point (in other words,
+	 * whether this point exists within the volume of this {@code AABB}).
 	 * 
 	 * @param point the point to be checked
-	 * @return whether this box encompasses the point
+	 * @return whether this {@code AABB} encompasses the point
 	 */
 	public boolean encompasses(Location point) {
 		World world = point.getWorld();
@@ -347,8 +361,8 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Enabling drawing will result in a visual representation of this AABB to be
-	 * made in game using particles. Useful for debugging.
+	 * Enabling drawing will result in a visual representation of this {@code AABB}
+	 * to be made in game using particles. Useful for debugging.
 	 */
 	public void setDrawingEnabled(boolean enabled) {
 		boolean redundant = this.drawingEnabled == enabled;
@@ -370,6 +384,11 @@ public abstract class AABB {
 		}
 	}
 
+	/**
+	 * Changes the mode, or pattern, used to draw this {@code AABB}.
+	 * 
+	 * @param mode the mode with which this {@code AABB} will be drawn
+	 */
 	public void setDrawMode(AABBDrawMode mode) {
 		drawMode = mode;
 		if (drawingEnabled) {
@@ -382,7 +401,7 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Changes the particle used to draw this AABB when drawing is enabled.
+	 * Changes the particle used to draw this {@code AABB} when drawing is enabled.
 	 */
 	public void setDrawParticle(Particle particle) {
 		drawParticle = particle;
@@ -409,6 +428,9 @@ public abstract class AABB {
 		drawTask = new RepeatingTask(r, DRAW_PERIOD);
 	}
 
+	/**
+	 * Draws this {@code AABB} in a wireframe pattern.
+	 */
 	private void drawWireframe() {
 		// distance between particles used to draw
 		double spaceDistance = 1 / DRAW_THICKNESS;
@@ -454,6 +476,10 @@ public abstract class AABB {
 		}
 	}
 
+	/**
+	 * Draws this {@code AABB} in a fill pattern (i.e. the drawing is completely
+	 * filled with particles).
+	 */
 	private void drawFill() {
 		// distance between particles used to draw
 		double spaceDistance = 1 / DRAW_THICKNESS;
@@ -554,7 +580,7 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Detects the presence and and absense of collisions between this {@code AABB}
+	 * Detects the presence and and absence of collisions between this {@code AABB}
 	 * and other {@code AABB}s and responds appropriately.
 	 */
 	private void checkForCollision() {
@@ -592,7 +618,7 @@ public abstract class AABB {
 	/**
 	 * Responds to this {@code AABB} and another {@code AABB} colliding with each
 	 * other. Called when two {@code AABB}s that were colliding no longer overlap
-	 * each other. {@code onCollisionEnter(AABB)} is called from each of the
+	 * each other. {@code onCollisionEnter} is called from each of the
 	 * {@code AABB}s.
 	 * 
 	 * @param other the other {@code AABB} in the collision
@@ -607,7 +633,7 @@ public abstract class AABB {
 	/**
 	 * Responds to this {@code AABB} and another {@code AABB} retracting from a
 	 * collision. Called when two {@code AABB}s that were colliding no longer
-	 * overlap each other. {@code onCollisionExit(AABB)} is called from each of the
+	 * overlap each other. {@code onCollisionExit} is called from each of the
 	 * {@code AABB}s.
 	 * 
 	 * @param other the other {@code AABB} in the collision
@@ -620,10 +646,10 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Returns whether this AABB collides with another AABB.
+	 * Returns whether this {@code AABB} collides with another {@code AABB}.
 	 * 
-	 * @param other the other AABB
-	 * @return whether the two AABBs are colliding
+	 * @param other the other {@code AABB}
+	 * @return whether the two {@code AABB}s are colliding
 	 */
 	private boolean collides(AABB other) {
 		return (this.getXMin() <= other.getXMax() && this.getXMax() >= other.getXMin())

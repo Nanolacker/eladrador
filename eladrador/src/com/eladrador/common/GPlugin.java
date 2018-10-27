@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import com.eladrador.common.scheduling.GClock;
+import com.eladrador.common.ui.TextPanel;
 import com.eladrador.test.TestGameManager;
 
 import net.md_5.bungee.api.ChatColor;
@@ -51,6 +52,7 @@ public final class GPlugin extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
+		TextPanel.removeAllTextPanelEntities();
 		/*
 		 * gameManager.onDisable(); OfflinePlayer[] players =
 		 * server.getOfflinePlayers(); for (int i = 0; i < players.length; i++) {

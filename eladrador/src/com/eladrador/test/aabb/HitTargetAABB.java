@@ -9,21 +9,18 @@ public class HitTargetAABB extends AABB {
 
 	public HitTargetAABB(Location center, double lengthX, double lengthY, double lengthZ) {
 		super(center, lengthX, lengthY, lengthZ);
-		setDrawMode(AABBDrawMode.FILL);
 		setDrawingEnabled(true);
-		setDrawParticle(Particle.SPELL_WITCH);
+		setDrawParticle(AABB.DEFAULT_DRAW_PARTICLE);
 	}
 
 	@Override
 	protected void onCollisionEnter(AABB other) {
 		setDrawParticle(Particle.DAMAGE_INDICATOR);
-		setDrawMode(AABBDrawMode.FILL);
 	}
 
 	@Override
 	protected void onCollisionExit(AABB other) {
-		setDrawParticle(Particle.SPELL_WITCH);
-		setDrawMode(AABBDrawMode.WIREFRAME);
+		setDrawParticle(AABB.DEFAULT_DRAW_PARTICLE);
 	}
 
 }

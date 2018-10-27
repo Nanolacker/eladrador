@@ -36,7 +36,9 @@ final class AABBBucket {
 	 * this bucket.
 	 */
 	private ArrayList<AABB> encompassedAABBs;
-
+	/**
+	 * Not a {@code Location} in the traditional sense. 
+	 */
 	private Location address;
 
 	private AABBBucket(Location address) {

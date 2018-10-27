@@ -6,17 +6,17 @@ import org.bukkit.scheduler.BukkitScheduler;
 import com.eladrador.common.GPlugin;
 
 /**
- * A task that runs repeatedly.
+ * A task that runs repeatedly at a mutable period.
  */
 public class RepeatingTask extends AbstractTask {
 
 	/**
-	 * In seconds.
+	 * The period of this {@code RepeatingTask}, in seconds.
 	 */
 	private double period;
 
 	/**
-	 * @param period the period in seconds of the task
+	 * @param period the period of this {@code RepeatingTask}, in seconds
 	 */
 	public RepeatingTask(Runnable r, double period) {
 		super(r);
@@ -31,10 +31,19 @@ public class RepeatingTask extends AbstractTask {
 		taskID = scheduler.scheduleSyncRepeatingTask(plugin, r, 0, periodInMilis);
 	}
 
+	/**
+	 * Returns the period of this {@code RepeatingTask}.
+	 */
 	public double getPeriod() {
 		return period;
 	}
 
+	/**
+	 * Sets the period of this {@code RepeatingTask}, making it run at a different
+	 * rate than previously.
+	 * 
+	 * @param period the new period of this {@code RepeatingTask}
+	 */
 	public void setPeriod(double period) {
 		this.period = period;
 		if (active) {

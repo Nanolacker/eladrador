@@ -2,13 +2,13 @@ package com.eladrador.test;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import com.eladrador.common.AbstractGameManager;
 import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
-import com.eladrador.common.scheduling.DelayedTask;
-import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.test.aabb.HitTargetAABB;
+import com.eladrador.test.character.SimpleNPC;
 
 public class TestGameManager extends AbstractGameManager {
 
@@ -21,20 +21,11 @@ public class TestGameManager extends AbstractGameManager {
 		toHit.setActive(true);
 
 		GPlugin.registerEvents(new AABBHitListener());
+		// GPlugin.registerEvents(new TextPanelListener());
 
-		RepeatingTask testTask = new RepeatingTask(new Runnable() {
-			public void run() {
-				Debug.log("asdf");
-			}
-		}, 1);
-		testTask.start();
+		Player player = Debug.getFirstPlayerOnline();
 
-		DelayedTask stop = new DelayedTask(new Runnable() {
-			public void run() {
-				testTask.stop();
-			}
-		}, 4.3553);
-		stop.start();
+		SimpleNPC npc = new SimpleNPC(player.getLocation(), 50);
 	}
 
 	@Override

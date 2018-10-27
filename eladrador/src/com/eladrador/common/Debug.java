@@ -13,12 +13,9 @@ import net.md_5.bungee.api.ChatColor;
  */
 public final class Debug {
 
-	private static Server server;
-
-	static {
-		server = GPlugin.getBukkitServer();
-	}
-
+	/**
+	 * Hides constructor.
+	 */
 	private Debug() {
 		// not to be instantiated
 	}
@@ -38,7 +35,7 @@ public final class Debug {
 
 			@Override
 			public void run() {
-				server.broadcastMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "[" + ChatColor.BLUE + ""
+				GPlugin.getBukkitServer().broadcastMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "[" + ChatColor.BLUE + ""
 						+ ChatColor.ITALIC + "DEBUG" + ChatColor.WHITE + ChatColor.ITALIC + ":" + ChatColor.RESET + " "
 						+ message + ChatColor.WHITE + "" + ChatColor.ITALIC + "]");
 			}
