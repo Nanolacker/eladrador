@@ -8,7 +8,7 @@ import com.eladrador.common.GPlugin;
 /**
  * A task that runs repeatedly at a mutable period.
  */
-public class RepeatingTask extends AbstractTask {
+public abstract class RepeatingTask extends AbstractTask {
 
 	/**
 	 * The period of this {@code RepeatingTask}, in seconds.
@@ -18,8 +18,7 @@ public class RepeatingTask extends AbstractTask {
 	/**
 	 * @param period the period of this {@code RepeatingTask}, in seconds
 	 */
-	public RepeatingTask(Runnable r, double period) {
-		super(r);
+	public RepeatingTask(double period) {
 		this.period = period;
 	}
 
@@ -28,7 +27,15 @@ public class RepeatingTask extends AbstractTask {
 		BukkitScheduler scheduler = GPlugin.getScheduler();
 		Plugin plugin = GPlugin.getPlugin();
 		long periodInMilis = (long) (period * 20);
-		taskID = scheduler.scheduleSyncRepeatingTask(plugin, r, 0, periodInMilis);
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				RepeatingTask.this.run();
+			}
+
+		};
+		taskID = scheduler.scheduleSyncRepeatingTask(plugin, runnable, 0, periodInMilis);
 	}
 
 	/**
@@ -56,7 +63,15 @@ public class RepeatingTask extends AbstractTask {
 			}
 			long timeUntilExecutionInMilis = (long) ((executionTime - serverTime) * 20);
 			long periodInMilis = (long) (period * 20);
-			taskID = scheduler.scheduleSyncRepeatingTask(GPlugin.getPlugin(), r, timeUntilExecutionInMilis,
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					RepeatingTask.this.run();
+				}
+
+			};
+			taskID = scheduler.scheduleSyncRepeatingTask(GPlugin.getPlugin(), runnable, timeUntilExecutionInMilis,
 					periodInMilis);
 		}
 	}

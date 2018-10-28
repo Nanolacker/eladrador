@@ -1,83 +1,182 @@
 package com.eladrador.common.character;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import com.eladrador.common.GPlugin;
+import com.eladrador.common.ui.TextPanel;
 
-import net.minecraft.server.v1_13_R2.Entity;
+public abstract class AbstractCharacter implements Damager {
 
-public class AbstractCharacter {
-
-	protected String name;
-	protected int level;
-	protected Location loc;
-	protected float maxHealth;
-	protected float currentHealth;
+	/**
+	 * Used to identify this {@code AbstractCharacter}.
+	 */
 	protected UUID id;
+	/**
+	 * The name of this {@code AbstractCharacter}, including any {@code ChatColor}
+	 * components.
+	 */
+	protected String name;
+	/**
+	 * A marker of difficulty.
+	 */
+	protected int level;
+	/**
+	 * The max health.
+	 */
+	protected double maxHealth;
+	/**
+	 * The current health.
+	 */
+	protected double currentHealth;
+	/**
+	 * The location of this {@code AbstractCharacter}.
+	 */
+	protected Location location;
+	/**
+	 * Whether this {@code AbstractCharacter} is spawned.
+	 */
+	protected boolean spawned;
+	/**
+	 * {@code TextPanel} used to display name, level, and health.
+	 */
+	protected TextPanel nameplate;
 
-	protected ArrayList<org.bukkit.entity.Entity> bukkitEntities;
-	protected ArrayList<Entity> nMSEntities;
-
-	protected AbstractCharacter(String name, int level) {
+	protected AbstractCharacter(String name, int level, double maxHealth, Location location) {
+		id = UUID.randomUUID();
 		this.name = name;
 		this.level = level;
-		id = UUID.randomUUID();
-		bukkitEntities = new ArrayList<org.bukkit.entity.Entity>();
-		nMSEntities = new ArrayList<Entity>();
+		this.maxHealth = maxHealth;
+		currentHealth = maxHealth;
+		this.location = location;
+		spawned = false;
+		nameplate = new TextPanel(50, location);
 		GPlugin.getGameManager().registerChara(this);
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public int getLevel() {
-		return level;
-	}
-
-	public UUID getId() {
+	/**
+	 * Returns the ID of this {@code AbstractCharacter}.
+	 */
+	public final UUID getId() {
 		return id;
 	}
 
 	/**
-	 * Moves the character.
-	 * 
-	 * @param movement     the movement this character will undergo
-	 * @param moveEntities whether to move any entities associated with this
-	 *                     character as well
+	 * Returns the name of this {@code AbstractCharacter}, including its
+	 * {@code ChatColor} component if there is one.
 	 */
-	public void move(Vector movement) {
-		loc.add(movement);
-		for (Entity e : nMSEntities) {
-			e.move(null, movement.getX(), movement.getY(), movement.getZ());
+	public final String getName() {
+		return name;
+	}
+
+	/**
+	 * Returns the level of this {@code AbstractCharacter}, a marker of its
+	 * strength.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public final int getLevel() {
+		return level;
+	}
+
+	/**
+	 * Returns the location of this character.
+	 */
+	public final Location getLocation() {
+		return location;
+	}
+
+	/**
+	 * Sets the location of this character.
+	 * 
+	 * @param location the location of this character
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public void setLocation(Location location) {
+		this.location = location;
+		updateNameplatePosition();
+	}
+
+	/**
+	 * Called whenever this {@code AbstractCharacter} changes position. Intended to
+	 * reposition its nameplate while accounting for the offset between this
+	 * {@code AbstractCharacter}'s actual position and the ideal nampelate position.
+	 */
+	protected abstract void updateNameplatePosition();
+
+	protected final void updateNameplateText() {
+		nameplate.setText(nameplateText());
+	}
+
+	private final String nameplateText() {
+		int numBars = 40;
+		StringBuilder text = new StringBuilder();
+		text.append(ChatColor.WHITE + "[" + ChatColor.GOLD + "Lv. " + level + ChatColor.WHITE + "] " + ChatColor.RESET
+				+ name + '\n');
+		text.append(ChatColor.WHITE + "[");
+		double currentToMaxHealthRatio = currentHealth / maxHealth;
+		int numRedBars = (int) (numBars * currentToMaxHealthRatio);
+		text.append(ChatColor.RED.toString());
+		for (int i = 0; i < numRedBars; i++) {
+			text.append('|');
 		}
-		for (org.bukkit.entity.Entity e : bukkitEntities) {
-			e.setVelocity(movement);
+		text.append(ChatColor.GRAY.toString());
+		for (int i = numRedBars; i < numBars; i++) {
+			text.append('|');
+		}
+		text.append(ChatColor.WHITE + "]");
+		return text.toString();
+	}
+
+	/**
+	 * Reduces this {@code AbstractCharacter}'s health by an amount. If health
+	 * reaches 0, they die.
+	 * 
+	 * @param damage the amount
+	 * @param source the source of the damage
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public void damage(double damage, Damager source) {
+		currentHealth -= damage;
+		if (currentHealth <= 0.0) {
+			die(source);
+		} else {
+			updateNameplateText();
 		}
 	}
 
-	protected void registerEntity(Entity entity) {
-		nMSEntities.add(entity);
-		entity.addScoreboardTag(id.toString());
+	@OverridingMethodsMustInvokeSuper
+	public void spawn() {
+		if (spawned) {
+			throw new IllegalStateException("Cannot spawn a character that is already spawned.");
+		}
+		spawned = true;
+		updateNameplatePosition();
+		updateNameplateText();
+		nameplate.setVisible(true);
 	}
 
-	protected void registerEntity(org.bukkit.entity.Entity entity) {
-		bukkitEntities.add(entity);
-		entity.addScoreboardTag(id.toString());
+	/**
+	 * Despawns this {@code AbstractCharacter}, thus not allowing it to interact
+	 * with the world.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public void despawn() {
+		spawned = false;
 	}
 
-	protected void unregisterEntity(Entity entity) {
-		nMSEntities.remove(entity);
-		entity.removeScoreboardTag(id.toString());
-	}
-
-	protected void unregisterEntity(org.bukkit.entity.Entity entity) {
-		bukkitEntities.remove(entity);
-		entity.removeScoreboardTag(id.toString());
+	/**
+	 * Kills this {@code AbstractCharacter}.
+	 */
+	@OverridingMethodsMustInvokeSuper
+	public void die(Damager killer) {
+		spawned = false;
+		currentHealth = 0.0;
+		nameplate.setVisible(false);
 	}
 
 }

@@ -16,7 +16,7 @@ public class TextPanelListener implements Listener {
 		Player player = event.getPlayer();
 		Location loc = player.getLocation();
 		TextPanel tp = new TextPanel("This is a test", 5, loc);
-		tp.setEnabled(true);
+		tp.setVisible(true);
 	}
 
 }

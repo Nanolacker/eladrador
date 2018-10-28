@@ -1,7 +1,5 @@
 package com.eladrador.common;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 import com.eladrador.common.scheduling.DelayedTask;
@@ -31,29 +29,27 @@ public final class Debug {
 		 * message will not print visibly. As such, a DelayedTask is used to make
 		 * printing debug messages on startup possible.
 		 */
-		Runnable r = new Runnable() {
+		DelayedTask task = new DelayedTask(0.0) {
 
 			@Override
-			public void run() {
-				GPlugin.getBukkitServer().broadcastMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "[" + ChatColor.BLUE + ""
-						+ ChatColor.ITALIC + "DEBUG" + ChatColor.WHITE + ChatColor.ITALIC + ":" + ChatColor.RESET + " "
-						+ message + ChatColor.WHITE + "" + ChatColor.ITALIC + "]");
+			protected void run() {
+				GPlugin.getBukkitServer()
+						.broadcastMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "[" + ChatColor.BLUE + ""
+								+ ChatColor.ITALIC + "DEBUG" + ChatColor.WHITE + ChatColor.ITALIC + ":"
+								+ ChatColor.RESET + " " + message + ChatColor.WHITE + "" + ChatColor.ITALIC + "]");
 			}
 
 		};
-		DelayedTask task = new DelayedTask(r, 0.0);
 		task.start();
 	}
 
 	/**
-	 * Returns the first Player on the server. Useful for quickly grabbing a player
-	 * to debug and test with.
+	 * Returns the first {@code Player} on the server. Returns {@code null} if no
+	 * players are online. Useful for quickly grabbing a player to debug and test
+	 * with.
 	 */
 	public static Player getFirstPlayerOnline() {
 		Player[] onlinePlayers = GPlugin.getBukkitServer().getOnlinePlayers().toArray(new Player[1]);
-		if (onlinePlayers.length == 0) {
-			throw new IllegalStateException("No players are currently online");
-		}
 		Player player = onlinePlayers[0];
 		return player;
 	}

@@ -6,7 +6,7 @@ import org.bukkit.event.Listener;
 import com.eladrador.common.Zone;
 
 /**
- * Represents where a PlayerCharacter comes from in the world and what perks
+ * Represents the background of a player character and governs certain perks
  * they have as a result.
  *
  */

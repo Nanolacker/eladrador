@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import com.eladrador.common.AbstractGameManager;
 import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
+import com.eladrador.test.aabb.AABBHitListener;
 import com.eladrador.test.aabb.HitTargetAABB;
 import com.eladrador.test.character.SimpleNPC;
 
@@ -24,8 +25,10 @@ public class TestGameManager extends AbstractGameManager {
 		// GPlugin.registerEvents(new TextPanelListener());
 
 		Player player = Debug.getFirstPlayerOnline();
-
-		SimpleNPC npc = new SimpleNPC(player.getLocation(), 50);
+		if (player != null) {
+			SimpleNPC npc = new SimpleNPC(player.getLocation(), 100);
+			npc.spawn();
+		}
 	}
 
 	@Override

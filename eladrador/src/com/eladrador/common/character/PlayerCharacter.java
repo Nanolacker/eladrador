@@ -30,7 +30,7 @@ public class PlayerCharacter extends AbstractCharacter {
 	 * @param bukkitPlayer the player entity to associate with this PlayerCharacter
 	 */
 	public PlayerCharacter(Player bukkitPlayer, PlayerBackground background, PlayerClass playerClass) {
-		super(bukkitPlayer.getName(), 1);
+		super(bukkitPlayer.getName(), 1, 0, null);// CHANGE
 		setBukkitPlayer(bukkitPlayer);
 		this.background = background;
 		this.playerClass = playerClass;
@@ -59,7 +59,6 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	public void setBukkitPlayer(Player bukkitPlayer) {
 		this.bukkitPlayer = bukkitPlayer;
-		registerEntity(bukkitPlayer);
 	}
 
 	public PlayerBackground getBackground() {
@@ -87,7 +86,11 @@ public class PlayerCharacter extends AbstractCharacter {
 	}
 
 	public void save() {
-		unregisterEntity(bukkitPlayer);
+	}
+
+	@Override
+	protected void updateNameplatePosition() {
+		nameplate.setLocation(location.clone().add(0, 2, 0));
 	}
 
 }

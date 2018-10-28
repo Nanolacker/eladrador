@@ -14,17 +14,14 @@ public class EntityMovementMimicker {
 	private Location prevEntityLoc;
 
 	public EntityMovementMimicker(Entity toMimic, AbstractCharacter toMove) {
-		Runnable r = new Runnable() {
+		RepeatingTask task = new RepeatingTask(0.05) {
 
 			@Override
-			public void run() {
-
+			protected void run() {
 				Vector movement = new Vector();
-				toMove.move(movement);
 			}
 
 		};
-		RepeatingTask task = new RepeatingTask(r, 0.05);
 	}
 
 	public void setEnabled(boolean enabled) {

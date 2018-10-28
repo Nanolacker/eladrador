@@ -32,14 +32,13 @@ public class RigidBodyImpl implements RigidBody {
 	}
 
 	/**
-	 * Applies a force to this {@code RigidBody}. Each component of {@code force} is
-	 * treated as if it were in newtons.
+	 * Applies a force to this {@code RigidBody} in newtons.
 	 */
 	@Override
 	public void applyForce(Vector force) {
-		
-	}
 
+	}
+	
 	@Override
 	public double getMass() {
 		return mass;

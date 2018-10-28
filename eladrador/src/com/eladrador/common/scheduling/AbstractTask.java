@@ -7,13 +7,11 @@ import com.eladrador.common.GPlugin;
  */
 public abstract class AbstractTask {
 
-	protected Runnable r;
 	protected int taskID;
 	boolean active;
 	protected double exeTime;
 
-	protected AbstractTask(Runnable r) {
-		this.r = r;
+	protected AbstractTask() {
 		active = false;
 		exeTime = -1;
 	}
@@ -83,5 +81,10 @@ public abstract class AbstractTask {
 			}
 		}
 	}
+
+	/**
+	 * Called when this task runs.
+	 */
+	protected abstract void run();
 
 }

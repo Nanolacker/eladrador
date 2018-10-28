@@ -8,12 +8,11 @@ import com.eladrador.common.GPlugin;
 /**
  * A task that runs after a given amount of time has passed.
  */
-public class DelayedTask extends AbstractTask {
+public abstract class DelayedTask extends AbstractTask {
 
 	private double delay;
 
-	public DelayedTask(Runnable r, double delay) {
-		super(r);
+	public DelayedTask(double delay) {
 		this.delay = delay;
 	}
 
@@ -22,7 +21,15 @@ public class DelayedTask extends AbstractTask {
 		BukkitScheduler scheduler = GPlugin.getScheduler();
 		Plugin plugin = GPlugin.getPlugin();
 		long delayInMilis = (long) (getDelay() * 20);
-		taskID = scheduler.scheduleSyncDelayedTask(plugin, r, delayInMilis);
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				DelayedTask.this.run();
+			}
+
+		};
+		taskID = scheduler.scheduleSyncDelayedTask(plugin, runnable, delayInMilis);
 	}
 
 	public double getDelay() {

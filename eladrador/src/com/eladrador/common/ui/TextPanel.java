@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 
-import com.eladrador.common.Debug;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.utils.Players;
 import com.eladrador.common.utils.StrUtils;
@@ -48,9 +47,9 @@ public class TextPanel {
 	private static ArrayList<TextPanel> textPanels;
 
 	/**
-	 * whether this {@code TextPanel} is enabled and rendering textF
+	 * whether this {@code TextPanel} is visible and rendering text
 	 */
-	private boolean enabled;
+	private boolean visible;
 	/**
 	 * the text rendered by this {@code TextPanel}
 	 */
@@ -83,15 +82,33 @@ public class TextPanel {
 	}
 
 	/**
-	 * Constructs a new {@code TextPanel}. Be sure to use {@code setEnabled} to
-	 * enable it. If left disabled, text will not be rendered.
+	 * Constructs a new {@code TextPanel}. Be sure to invoke {@code setVisible} to
+	 * make it visible. If this is not done, the text will be invisible.
 	 * 
 	 * @param text     the text rendered by this {@code TextPanel}
 	 * @param location this {@code TextPanel}'s {@code Location}
 	 */
 	public TextPanel(String text, int maxCharsPerLine, Location location) {
-		enabled = false;
+		visible = false;
 		this.text = text;
+		this.maxCharsPerLine = maxCharsPerLine;
+		this.location = location;
+		entities = new ArrayList<EntityArmorStand>();
+		spawned = false;
+		initSpawnManageTask();
+		textPanels.add(this);
+	}
+
+	/**
+	 * Constructs a new {@code TextPanel} whose text value defaults to {@code ""}.
+	 * Be sure to invoke {@code setVisible} to make it visible. If this is not done,
+	 * the text will be invisible.
+	 * 
+	 * @param location this {@code TextPanel}'s {@code Location}
+	 */
+	public TextPanel(int maxCharsPerLine, Location location) {
+		visible = false;
+		text = "";
 		this.maxCharsPerLine = maxCharsPerLine;
 		this.location = location;
 		entities = new ArrayList<EntityArmorStand>();
@@ -105,10 +122,10 @@ public class TextPanel {
 	 * associated with this {@code TextPanel}.
 	 */
 	private void initSpawnManageTask() {
-		Runnable spawnCheck = new Runnable() {
+		entitySpawnManageTask = new RepeatingTask(SPAWN_MANAGE_TASK_PERIOD) {
 
 			@Override
-			public void run() {
+			protected void run() {
 				boolean playerNearby = Players.playerNearby(location, MAX_SPAWN_DISTANCE_FROM_PLAYER,
 						MAX_SPAWN_DISTANCE_FROM_PLAYER, MAX_SPAWN_DISTANCE_FROM_PLAYER);
 				if (playerNearby && !spawned) {
@@ -119,7 +136,6 @@ public class TextPanel {
 			}
 
 		};
-		entitySpawnManageTask = new RepeatingTask(spawnCheck, SPAWN_MANAGE_TASK_PERIOD);
 		// task not started until later
 	}
 
@@ -130,27 +146,27 @@ public class TextPanel {
 	public static void removeAllTextPanelEntities() {
 		for (int i = 0; i < textPanels.size(); i++) {
 			TextPanel textPanel = textPanels.get(i);
-			textPanel.setEnabled(false);
+			textPanel.setVisible(false);
 		}
 	}
 
 	/**
-	 * Returns whether this {@code TextPanel} is enabled and rendering text.
+	 * Returns whether this {@code TextPanel} is visible and rendering text.
 	 */
-	public boolean getEnabled() {
-		return enabled;
+	public boolean getVisible() {
+		return visible;
 	}
 
 	/**
-	 * Sets whether this {@code TextPanel} is enabled and rendering text.
+	 * Sets whether this {@code TextPanel} is visible and rendering text.
 	 */
-	public void setEnabled(boolean enabled) {
-		boolean redundant = this.enabled == enabled;
+	public void setVisible(boolean visible) {
+		boolean redundant = this.visible == visible;
 		if (redundant) {
 			return;
 		}
-		this.enabled = enabled;
-		if (enabled) {
+		this.visible = visible;
+		if (visible) {
 			entitySpawnManageTask.start();
 		} else {
 			removeOldEntities();
@@ -170,7 +186,7 @@ public class TextPanel {
 	 */
 	public void setText(String text) {
 		this.text = text;
-		if (enabled) {
+		if (visible) {
 			// updates text
 			removeOldEntities();
 			constructNewEntities();
@@ -190,7 +206,7 @@ public class TextPanel {
 	public void setLocation(Location location) {
 		Location temp = this.location;
 		this.location = location;
-		if (enabled) {
+		if (visible) {
 			double translateX = temp.getX() - location.getX();
 			double translateY = temp.getY() - location.getY();
 			double translateZ = temp.getZ() - location.getZ();
@@ -226,6 +242,9 @@ public class TextPanel {
 			 * so there is no need to explicitly set it invulnerable.
 			 */
 			entity.setInvisible(true);
+			entity.setSmall(true);
+			entity.setArms(false);
+			entity.setMarker(true);
 			String line = lines.get(lineCount);
 			entity.getBukkitEntity().setCustomName(line);
 			entity.setCustomNameVisible(true);

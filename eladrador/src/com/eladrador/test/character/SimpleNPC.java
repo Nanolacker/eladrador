@@ -4,57 +4,73 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 
+import com.eladrador.common.character.AbstractCharacter;
+import com.eladrador.common.character.Damager;
 import com.eladrador.common.collision.AABB;
 import com.eladrador.common.collision.AABB.AABBDrawMode;
-import com.eladrador.common.ui.TextPanel;
+import com.eladrador.common.scheduling.RepeatingTask;
 
+public class SimpleNPC extends AbstractCharacter {
 
-public class SimpleNPC {
-
-	private double health;
-	private double maxHealth;
 	private AABB aabb;
-	private TextPanel nameplate;
+	private Particle drawParticle = Particle.BUBBLE_POP;
+
+	public static final double SPEED = 1;
 
 	public SimpleNPC(Location loc, double maxHealth) {
-		health = maxHealth;
-		this.maxHealth = maxHealth;
+		super(ChatColor.RED + "The Big Bad Box", 1, maxHealth, loc);
 		aabb = new AABB(loc, 5, 5, 5) {
 
 			protected void onCollisionEnter(AABB other) {
-				damage(5);
+				damage(5, null);
 				setDrawParticle(Particle.DAMAGE_INDICATOR);
 			}
 
 			protected void onCollisionExit(AABB other) {
-				setDrawParticle(AABB.DEFAULT_DRAW_PARTICLE);
+				setDrawParticle(drawParticle);
 			}
+
 		};
-		aabb.setDrawMode(AABBDrawMode.FILL);
+		move();
+	}
+
+	private void move() {
+		RepeatingTask mover = new RepeatingTask(0.1) {
+
+			@Override
+			protected void run() {
+				setLocation(getLocation().add(0, 0, SPEED));
+			}
+
+		};
+		mover.start();
+	}
+
+	@Override
+	public void setLocation(Location location) {
+		super.setLocation(location);
+		aabb.setCenter(location);
+	}
+
+	@Override
+	public void spawn() {
+		super.spawn();
+		aabb.setDrawParticle(drawParticle);
+		aabb.setDrawMode(AABBDrawMode.WIREFRAME);
 		aabb.setDrawingEnabled(true);
 		aabb.setActive(true);
-		nameplate = new TextPanel("", 25, new Location(loc.getWorld(), loc.getX(), loc.getY() + 1.5, loc.getZ()));
-		nameplate.setEnabled(true);
-		updateNameplate();
 	}
 
-	public void damage(double dmg) {
-		health -= dmg;
-		if (health <= 0) {
-			die();
-		} else {
-			updateNameplate();
-		}
-	}
-
-	private void updateNameplate() {
-		nameplate.setText("The Big Bad Box\n" + ChatColor.RED + "Health: " + health + "/" + maxHealth);
-	}
-
-	private void die() {
+	@Override
+	public void die(Damager killer) {
+		super.die(killer);
 		aabb.setActive(false);
 		aabb.setDrawingEnabled(false);
-		nameplate.setText(ChatColor.GRAY + "*DEAD*");
+	}
+
+	@Override
+	protected void updateNameplatePosition() {
+		nameplate.setLocation(location.clone().add(0, 3, 0));
 	}
 
 }

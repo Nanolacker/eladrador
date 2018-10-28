@@ -1,21 +1,18 @@
 package com.eladrador.common;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.GClock;
+import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.TextPanel;
 import com.eladrador.test.TestGameManager;
-
-import net.md_5.bungee.api.ChatColor;
 
 public final class GPlugin extends JavaPlugin {
 
@@ -65,18 +62,29 @@ public final class GPlugin extends JavaPlugin {
 	 * Reloads the server when project is exported for ease of development.
 	 */
 	private void enableReloadOnExport() {
-		final long lastModified = getFile().lastModified();
-		new BukkitRunnable() {
+		long lastModified = getFile().lastModified();
+		RepeatingTask checkForUpdate = new RepeatingTask(2.0) {
 
 			@Override
-			public void run() {
+			protected void run() {
 				if (getFile().lastModified() > lastModified) {
-					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload");
-					cancel();
+					// delayed to prevent certain errors that result from reloading too quickly
+					// after exporting
+					DelayedTask reload = new DelayedTask(1.0) {
+
+						@Override
+						protected void run() {
+							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload");
+							stop();
+						}
+
+					};
+					reload.start();
 				}
 			}
 
-		}.runTaskTimer(this, 0, 20);
+		};
+		checkForUpdate.start();
 	}
 
 	public static Plugin getPlugin() {

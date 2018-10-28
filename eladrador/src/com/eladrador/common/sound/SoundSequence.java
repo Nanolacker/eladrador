@@ -105,20 +105,19 @@ public class SoundSequence {
 			double noiseTime = element.getTime();
 			if (noiseTime > sequenceStartTime) {
 				Noise noise = element.getNoise();
-				Runnable r = new Runnable() {
+				DelayedTask playNoise = new DelayedTask(noiseTime - sequenceStartTime) {
 
 					@Override
-					public void run() {
+					protected void run() {
 						noise.play();
 					}
 
 				};
-				DelayedTask playNoise = new DelayedTask(r, noiseTime - sequenceStartTime);
 				playTasks.add(playNoise);
 				playNoise.start();
 			}
 		}
-		Runnable r = new Runnable() {
+		DelayedTask finish = new DelayedTask(duration - sequenceStartTime) {
 
 			@Override
 			public void run() {
@@ -129,7 +128,6 @@ public class SoundSequence {
 			}
 
 		};
-		DelayedTask finish = new DelayedTask(r, duration - sequenceStartTime);
 		playTasks.add(finish);
 		finish.start();
 	}
@@ -151,20 +149,19 @@ public class SoundSequence {
 			double noiseTime = element.getTime();
 			if (noiseTime >= sequenceStartTime) {
 				Noise noise = element.getNoise();
-				Runnable r = new Runnable() {
+				DelayedTask playNoise = new DelayedTask(noiseTime - sequenceStartTime) {
 
 					@Override
-					public void run() {
+					protected void run() {
 						noise.play(p);
 					}
 
 				};
-				DelayedTask playNoise = new DelayedTask(r, noiseTime - sequenceStartTime);
 				playTasks.add(playNoise);
 				playNoise.start();
 			}
 		}
-		Runnable r = new Runnable() {
+		DelayedTask finish = new DelayedTask(duration - sequenceStartTime) {
 
 			@Override
 			public void run() {
@@ -175,7 +172,6 @@ public class SoundSequence {
 			}
 
 		};
-		DelayedTask finish = new DelayedTask(r, duration - sequenceStartTime);
 		playTasks.add(finish);
 		finish.start();
 	}

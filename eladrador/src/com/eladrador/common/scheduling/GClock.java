@@ -10,16 +10,14 @@ public class GClock {
 	private static double time;
 
 	public static void start() {
-		Runnable r = new Runnable() {
+		RepeatingTask clock = new RepeatingTask(UPDATE_PERIOD) {
 
 			@Override
-			public void run() {
+			protected void run() {
 				time += UPDATE_PERIOD;
 			}
 
 		};
-
-		RepeatingTask clock = new RepeatingTask(r, UPDATE_PERIOD);
 		clock.start();
 	}
 

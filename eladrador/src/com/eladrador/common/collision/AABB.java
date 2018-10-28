@@ -103,7 +103,7 @@ public abstract class AABB {
 
 	/**
 	 * Constructs a new axis-aligned bounding box. The max value on any axis must be
-	 * greater than that axis's min value. Be sure to call {@code setActive} to
+	 * greater than that axis's min value. Be sure to invoke {@code setActive} to
 	 * activate this {@code AABB} after construction.
 	 * 
 	 * @param world the {@code World} this {@code AABB} will exist in
@@ -142,7 +142,7 @@ public abstract class AABB {
 
 	/**
 	 * Constructs a new axis-aligned bounding box. Any length of this {@code AABB}
-	 * must be greater than 0. Be sure to call {@code setActive} to activate
+	 * must be greater than 0. Be sure to invoke {@code setActive} to activate
 	 * {@code AABB} after construction.
 	 * 
 	 * @param center  the {@code Location}, including the {@code World}, at the
@@ -408,10 +408,10 @@ public abstract class AABB {
 	}
 
 	private void setDrawTask() {
-		Runnable r = new Runnable() {
+		drawTask = new RepeatingTask(DRAW_PERIOD) {
 
 			@Override
-			public void run() {
+			protected void run() {
 				switch (drawMode) {
 				case WIREFRAME:
 					drawWireframe();
@@ -425,7 +425,6 @@ public abstract class AABB {
 			}
 
 		};
-		drawTask = new RepeatingTask(r, DRAW_PERIOD);
 	}
 
 	/**
