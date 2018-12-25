@@ -1,7 +1,9 @@
 package com.eladrador.common;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -12,11 +14,11 @@ import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.GClock;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.TextPanel;
-import com.eladrador.test.TestGameManager;
+import com.eladrador.core.GameManager;
 
 public final class GPlugin extends JavaPlugin {
 
-	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = TestGameManager.class;
+	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = GameManager.class;
 
 	private static Plugin plugin;
 	private static Server server;
@@ -50,12 +52,21 @@ public final class GPlugin extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		TextPanel.removeAllTextPanelEntities();
-		/*
-		 * gameManager.onDisable(); OfflinePlayer[] players =
-		 * server.getOfflinePlayers(); for (int i = 0; i < players.length; i++) {
-		 * OfflinePlayer player = players[i]; if (player instanceof Player) { // if they
-		 * are online ((Player) player).kickPlayer("Server is restarting."); } }
-		 */
+		gameManager.onDisable();
+		// kickAllOnlinePlayers();
+	}
+
+	/**
+	 * Invoke when disabling.
+	 */
+	private void kickAllOnlinePlayers() {
+		OfflinePlayer[] players = server.getOfflinePlayers();
+		for (int i = 0; i < players.length; i++) {
+			OfflinePlayer player = players[i];
+			if (player instanceof Player) { // if they are online
+				((Player) player).kickPlayer("Server is restarting.");
+			}
+		}
 	}
 
 	/**

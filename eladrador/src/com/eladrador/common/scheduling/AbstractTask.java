@@ -1,5 +1,7 @@
 package com.eladrador.common.scheduling;
 
+import org.bukkit.scheduler.BukkitRunnable;
+
 import com.eladrador.common.GPlugin;
 
 /**
@@ -12,6 +14,7 @@ public abstract class AbstractTask {
 	protected double exeTime;
 
 	protected AbstractTask() {
+		BukkitRunnable b = null;
 		active = false;
 		exeTime = -1;
 	}
@@ -21,7 +24,8 @@ public abstract class AbstractTask {
 			stop();
 		}
 		active = true;
-		exeTime = GClock.getTime() + (this instanceof DelayedTask ? ((DelayedTask) this).getDelay() : 0);
+		double delay = this instanceof DelayedTask ? ((DelayedTask) this).getDelay() : 0;
+		exeTime = GClock.getTime() + delay;
 		scheduleBukkitTask();
 	}
 
@@ -33,11 +37,7 @@ public abstract class AbstractTask {
 			exeTime = -1;
 			GPlugin.getScheduler().cancelTask(taskID);
 		} else {
-			try {
-				throw new Exception("Cannot cancel a task that is not active");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			throw new IllegalStateException("Cannot cancel a task that is not active");
 		}
 	}
 
@@ -57,12 +57,7 @@ public abstract class AbstractTask {
 		if (active) {
 			return exeTime;
 		} else {
-			try {
-				throw new Exception("Cannot get execution time for a non-active task");
-			} catch (Exception e) {
-				e.printStackTrace();
-				return -1;
-			}
+			throw new IllegalStateException("Cannot get execution time for a non-active task");
 		}
 	}
 
@@ -73,17 +68,12 @@ public abstract class AbstractTask {
 		if (active) {
 			return exeTime - GClock.getTime();
 		} else {
-			try {
-				throw new Exception("Cannot get seconds until execution for a non-active task");
-			} catch (Exception e) {
-				e.printStackTrace();
-				return -1;
-			}
+			throw new IllegalStateException("Cannot get seconds until execution for a non-active task");
 		}
 	}
 
 	/**
-	 * Called when this task runs.
+	 * Invoked when this task runs.
 	 */
 	protected abstract void run();
 

@@ -8,7 +8,7 @@ public class TestQuest extends Quest {
 	public static TestQuest inst = new TestQuest();
 
 	private TestQuest() {
-		super("Test", 1, 0);
+		super("Test", 0, 1);
 		registerPhase(TestQuestPhase1.inst);
 	}
 

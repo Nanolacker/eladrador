@@ -2,7 +2,7 @@ package com.eladrador.common.quest;
 
 import java.util.HashMap;
 
-import com.eladrador.common.character.PlayerCharacter;
+import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.quest.persistence.QuestObjectiveChainState;
 import com.eladrador.common.quest.persistence.QuestObjectiveState;
 import com.eladrador.common.quest.persistence.QuestState;
@@ -31,11 +31,10 @@ public abstract class QuestObjective {
 		HashMap<Integer, QuestState> stateMap = pc.getQuestStateMap();
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
-		int questId = q.getId();
-		if (!stateMap.containsKey(questId)) {
+		if (!stateMap.containsKey(q)) {
 			return 0;
 		}
-		QuestState state = stateMap.get(questId);
+		QuestState state = stateMap.get(q);
 		QuestPhase activePhase = state.getActivePhase();
 		int activePhaseIndex = activePhase.index;
 		int targetPhaseIndex = targetPhase.index;
@@ -54,18 +53,17 @@ public abstract class QuestObjective {
 		HashMap<Integer, QuestState> stateMap = pc.getQuestStateMap();
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
-		Integer questId = q.getId();
-		if (!stateMap.containsKey(questId)) {
-			throwInactiveObjException();
+		if (!stateMap.containsKey(q)) {
+			throwInactiveObjectiveException();
 		} else {
-			QuestState state = stateMap.get(questId);
+			QuestState state = stateMap.get(q);
 			QuestPhase activePhase = state.getActivePhase();
 			int activePhaseIndex = activePhase.index;
 			int targetPhaseIndex = targetPhase.index;
 			if (activePhaseIndex < targetPhaseIndex) {
-				throwInactiveObjException();
+				throwInactiveObjectiveException();
 			} else if (activePhaseIndex > targetPhaseIndex) {
-				throwInactiveObjException();
+				throwInactiveObjectiveException();
 			} else {
 				QuestObjectiveChainState activeChainState = state.getCurrentObjChainStates().get(parent.index);
 				QuestObjectiveState objState = activeChainState.getObjStates().get(index);
@@ -74,12 +72,8 @@ public abstract class QuestObjective {
 		}
 	}
 
-	private void throwInactiveObjException() {
-		try {
-			throw new Exception("This objective must be active for the player to set its status");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private void throwInactiveObjectiveException() {
+		throw new RuntimeException("This objective must be active for the player to set its status");
 	}
 
 	public boolean isFulfilled(PlayerCharacter pc) {

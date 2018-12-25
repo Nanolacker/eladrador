@@ -1,13 +1,17 @@
-package com.eladrador.common;
+package com.eladrador.common.zone;
 
+import java.util.HashMap;
+
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
+import com.eladrador.common.Debug;
 import com.eladrador.common.character.AbstractCharacter;
-import com.eladrador.common.character.PlayerCharacter;
-import com.eladrador.common.collision.AABB;
-
-import net.md_5.bungee.api.ChatColor;
+import com.eladrador.common.character.CharacterCollider;
+import com.eladrador.common.collision.Collider;
+import com.eladrador.common.player.PlayerCharacter;
 
 /**
  * Represents an area of interest within game. Size can range from that of small
@@ -15,26 +19,39 @@ import net.md_5.bungee.api.ChatColor;
  */
 public abstract class Zone {
 
+	/**
+	 * Keys are the zone IDs.
+	 */
+	private static final HashMap<Integer, Zone> ZONE_MAP = new HashMap<Integer, Zone>();
+
 	private World world;
 	private String name;
-	private int level;
+	private int id;
 	private ChatColor displayColor;
+	private int level;
 
-	protected Zone(World world, String name, int level, ChatColor displayColor) {
+	protected Zone(World world, String name, int id, ChatColor displayColor, int level, BoundingBox... entranceBoxes) {
 		this.world = world;
 		this.name = name;
-		this.level = level;
+		this.id = id;
 		this.displayColor = displayColor;
+		this.level = level;
+		for (int i = 0; i < entranceBoxes.length; i++) {
+			BoundingBox boundingBox = entranceBoxes[i];
+			ZoneEntranceCollider collider = new ZoneEntranceCollider(this, boundingBox);
+			collider.setActive(true);
+		}
+		ZONE_MAP.put(id, this);
 	}
 
-	protected void registerBoundaryComponent(double xMin, double xMax, double yMin, double yMax, double zMin,
-			double zMax) {
-		ZoneBoundaryComponent component = new ZoneBoundaryComponent(this, xMin, xMax, yMin, yMax, zMin, zMax);
+	public static Zone byID(int id) {
+		return ZONE_MAP.get(id);
 	}
 
 	public void displayEntranceMessage(PlayerCharacter pc) {
 		Player p = pc.getBukkitPlayer();
-		String msg = GColor.LEVEL_INDICATION + "Lv. " + GColor.LEVEL_NUMBER + level + " " + displayColor + name;
+		String msg = ChatColor.GOLD + "Lv. " + level + " " + displayColor + name;
+		p.sendMessage(msg);
 	}
 
 	public World getWorld() {
@@ -45,39 +62,38 @@ public abstract class Zone {
 		return name;
 	}
 
-}
-
-class ZoneBoundaryComponent extends AABB {
-
-	private Zone zone;
-
-	/**
-	 * Constructs a new axis-aligned bounding box that sets a player's zone when
-	 * they enter. Nothing happens when the player exits. The maximum value on any
-	 * axis must be greater than the minimum value on said axis for proper function.
-	 * 
-	 * @param world the world this box will exist in
-	 * @param xMin  the minimum x value that exists within this box
-	 * @param xMax  the maximum x value that exists within this box
-	 * @param yMin  the minimum y value that exists within this box
-	 * @param yMax  the maximum y value that exists within this box
-	 * @param zMin  the minimum z value that exists within this box
-	 * @param zMax  the maximum z value that exists within this box
-	 */
-	ZoneBoundaryComponent(Zone zone, double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
-		super(zone.getWorld(), xMin, xMax, yMin, yMax, zMin, zMax);
-		this.zone = zone;
+	public int getID() {
+		return id;
 	}
 
-	@Override
-	protected void onCollisionEnter(AABB other) {
-		// TODO Auto-generated method stub
+	private static class ZoneEntranceCollider extends Collider {
 
-	}
+		private Zone zone;
 
-	@Override
-	protected void onCollisionExit(AABB other) {
-		// nothing
+		public ZoneEntranceCollider(Zone zone, BoundingBox boundingBox) {
+			super(zone.getWorld(), boundingBox);
+			this.zone = zone;
+			setDrawingEnabled(true);
+		}
+
+		@Override
+		protected void onCollisionEnter(Collider other) {
+			if (other instanceof CharacterCollider) {
+				AbstractCharacter character = ((CharacterCollider) other).getCharacter();
+				if (character instanceof PlayerCharacter) {
+					Zone playerZone = ((PlayerCharacter) character).getZone();
+					if (playerZone != this.zone) {
+						((PlayerCharacter) character).setZone(zone);
+					}
+				}
+			}
+		}
+
+		@Override
+		protected void onCollisionExit(Collider other) {
+			// nothing
+		}
+
 	}
 
 }

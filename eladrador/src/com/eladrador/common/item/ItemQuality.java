@@ -1,24 +1,23 @@
 package com.eladrador.common.item;
 
-import com.eladrador.common.GColor;
+import org.bukkit.ChatColor;
 
 /**
- * Represents the rarity and value of a GItemStack. The color of the title of a
- * GitemStack's image is determined by such.
+ * Represents the rarity and value of an item. The color of the title of an
+ * item's image is determined by such.
  * 
  */
 public enum ItemQuality {
-	POOR(GColor.ITEM_QUALITY_POOR), COMMON(GColor.ITEM_QUALITY_COMMON), UNCOMMON(GColor.ITEM_QUALITY_UNCOMMON), RARE(
-			GColor.ITEM_QUALITY_RARE), EPIC(GColor.ITEM_QUALITY_EPIC), LEGENDARY(
-					GColor.ITEM_QUALITY_LEGENDARY), DIVINE(GColor.ITEM_QUALITY_DIVINE);
+	POOR(ChatColor.GRAY), COMMON(ChatColor.WHITE), UNCOMMON(ChatColor.GREEN), RARE(ChatColor.BLUE),
+	EPIC(ChatColor.DARK_PURPLE), LEGENDARY(ChatColor.GOLD), DIVINE(ChatColor.AQUA);
 
-	private GColor color;
+	private ChatColor color;
 
-	private ItemQuality(GColor color) {
+	private ItemQuality(ChatColor color) {
 		this.color = color;
 	}
 
-	public GColor getColor() {
+	public ChatColor getColor() {
 		return color;
 	}
 

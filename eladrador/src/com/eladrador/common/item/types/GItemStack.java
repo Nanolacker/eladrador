@@ -1,14 +1,15 @@
 package com.eladrador.common.item.types;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.item.ItemAddress;
 import com.eladrador.common.item.ItemQuality;
+import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.utils.StrUtils;
 
 /**
@@ -21,8 +22,10 @@ import com.eladrador.common.utils.StrUtils;
  * will be displayed to players in an inventory view.
  *
  */
-public abstract class GItemStack implements Cloneable {
+public abstract class GItemStack implements Cloneable, Serializable {
 
+	private static final long serialVersionUID = -2360871158871572231L;
+	
 	private ItemAddress address;
 	private String name;
 	private ItemQuality quality;
@@ -78,10 +81,10 @@ public abstract class GItemStack implements Cloneable {
 	public ArrayList<String> getDescription(PlayerCharacter owner) {
 		ArrayList<String> description = new ArrayList<String>();
 		description.add(quality.toString());
-		description.addAll(StrUtils.stringToParagraph(getFlavorText(owner), StrUtils.LORE_CHARS_PER_LINE));
+		description.addAll(StrUtils.lineToParagraph(getFlavorText(owner), StrUtils.IDEAL_CHARACTERS_PER_LINE));
 		if (this instanceof ItemActionable) {
 			String actionDescription = ((ItemActionable) this).getActionDescription(owner);
-			description.addAll(StrUtils.stringToParagraph(actionDescription, StrUtils.LORE_CHARS_PER_LINE));
+			description.addAll(StrUtils.lineToParagraph(actionDescription, StrUtils.IDEAL_CHARACTERS_PER_LINE));
 		}
 		return description;
 	}
@@ -89,9 +92,8 @@ public abstract class GItemStack implements Cloneable {
 	/**
 	 * Override to add flavor text to be displayed on this GItemStack's image.
 	 * 
-	 * @param owner
-	 *            the PlayerCharacter owner which this GItemStack's flavor text is
-	 *            tailored to
+	 * @param owner the PlayerCharacter owner which this GItemStack's flavor text is
+	 *              tailored to
 	 * @return the flavor text to be displayed on this GItemStack's image (will be
 	 *         formatted automatically)
 	 */
@@ -103,11 +105,9 @@ public abstract class GItemStack implements Cloneable {
 	 * Called when this GItemStack is added to a PlayerCharacter's inventory, by any
 	 * means.
 	 * 
-	 * @param pc
-	 *            the PlayerCharacter that this item is being added to the inventory
-	 *            of
-	 * @param amount
-	 *            the amount being added
+	 * @param pc     the PlayerCharacter that this item is being added to the
+	 *               inventory of
+	 * @param amount the amount being added
 	 * 
 	 */
 	public void onPickup(PlayerCharacter pc, int amount) {
@@ -118,11 +118,9 @@ public abstract class GItemStack implements Cloneable {
 	 * Called when this GItemStack is subtracted from a PlayerCharacter's inventory,
 	 * by any means.
 	 * 
-	 * @param pc
-	 *            the PlayerCharacter that this item is being subtracted from the
-	 *            inventory of
-	 * @param amount
-	 *            the amount being subtracted
+	 * @param pc     the PlayerCharacter that this item is being subtracted from the
+	 *               inventory of
+	 * @param amount the amount being subtracted
 	 */
 	public void onDrop(PlayerCharacter pc, int amount) {
 		// override to add effects

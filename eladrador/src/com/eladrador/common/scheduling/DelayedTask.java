@@ -26,6 +26,7 @@ public abstract class DelayedTask extends AbstractTask {
 			@Override
 			public void run() {
 				DelayedTask.this.run();
+				active = false;
 			}
 
 		};

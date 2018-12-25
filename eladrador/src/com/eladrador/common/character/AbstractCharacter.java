@@ -6,8 +6,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
-
 import com.eladrador.common.GPlugin;
 import com.eladrador.common.ui.TextPanel;
 
@@ -55,7 +53,7 @@ public abstract class AbstractCharacter implements Damager {
 		currentHealth = maxHealth;
 		this.location = location;
 		spawned = false;
-		nameplate = new TextPanel(50, location);
+		nameplate = new TextPanel(22, location);
 		GPlugin.getGameManager().registerChara(this);
 	}
 
@@ -78,9 +76,16 @@ public abstract class AbstractCharacter implements Damager {
 	 * Returns the level of this {@code AbstractCharacter}, a marker of its
 	 * strength.
 	 */
-	@OverridingMethodsMustInvokeSuper
 	public final int getLevel() {
 		return level;
+	}
+
+	public double getMaxHealth() {
+		return maxHealth;
+	}
+
+	public double getCurrentHealth() {
+		return currentHealth;
 	}
 
 	/**
@@ -98,22 +103,25 @@ public abstract class AbstractCharacter implements Damager {
 	@OverridingMethodsMustInvokeSuper
 	public void setLocation(Location location) {
 		this.location = location;
-		updateNameplatePosition();
+		updateNameplateLocation();
 	}
 
 	/**
-	 * Called whenever this {@code AbstractCharacter} changes position. Intended to
-	 * reposition its nameplate while accounting for the offset between this
-	 * {@code AbstractCharacter}'s actual position and the ideal nampelate position.
+	 * Override to return the location that this character's nameplate should exist
+	 * at.
 	 */
-	protected abstract void updateNameplatePosition();
+	protected abstract Location getNameplateLocation();
 
 	protected final void updateNameplateText() {
 		nameplate.setText(nameplateText());
 	}
 
+	private final void updateNameplateLocation() {
+		nameplate.setLocation(getNameplateLocation());
+	}
+
 	private final String nameplateText() {
-		int numBars = 40;
+		int numBars = 20;
 		StringBuilder text = new StringBuilder();
 		text.append(ChatColor.WHITE + "[" + ChatColor.GOLD + "Lv. " + level + ChatColor.WHITE + "] " + ChatColor.RESET
 				+ name + '\n');
@@ -154,10 +162,11 @@ public abstract class AbstractCharacter implements Damager {
 		if (spawned) {
 			throw new IllegalStateException("Cannot spawn a character that is already spawned.");
 		}
-		spawned = true;
-		updateNameplatePosition();
+		currentHealth = maxHealth;
+		updateNameplateLocation();
 		updateNameplateText();
 		nameplate.setVisible(true);
+		spawned = true;
 	}
 
 	/**

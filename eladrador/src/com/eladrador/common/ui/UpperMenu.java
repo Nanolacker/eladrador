@@ -8,27 +8,27 @@ import org.bukkit.inventory.ItemStack;
 import com.eladrador.common.GPlugin;
 
 /**
- * Represents a menu whose image occupies the top part of the inventory view
- * when opened.
+ * Represents a menu whose image occupies the top part of the inventory view.
  */
-public class TopMenu extends AbstractMenu {
+public class UpperMenu extends ButtonContainer {
 
+	/**
+	 * The title of this menu's images.
+	 */
 	private String title;
 
-	public TopMenu(String title, TopMenuSize size) {
+	/**
+	 * Constructs a new upper menu with the specified title and size.
+	 */
+	public UpperMenu(String title, UpperMenuSize size) {
 		super(size.getValue());
 		this.title = title;
 	}
 
-	public void open(Player player) {
-		Inventory image = getNewImage();
-		player.openInventory(image);
-		registerImage(image);
-		UIProfile profile = UIListener.profiles.get(player);
-		profile.setTopMenuOpen(this);
-	}
-
-	private Inventory getNewImage() {
+	/**
+	 * Returns a fresh image representing this menu.
+	 */
+	Inventory getNewImage() {
 		Server server = GPlugin.getBukkitServer();
 		Inventory image = server.createInventory(null, size, title);
 		for (int i = 0; i < buttons.length; i++) {
@@ -42,23 +42,34 @@ public class TopMenu extends AbstractMenu {
 	}
 
 	/**
-	 * Override to handle the player closing the menu. Called when the player closes
-	 * the menu.
+	 * Override to handle the player closing the menu. Invoked when the player
+	 * closes the menu.
 	 */
-	public void onClose(Player player) {
+	protected void onClose(Player player) {
 		// override this (optional)
 	}
 
-	public enum TopMenuSize {
+	/**
+	 * Wraps numbers that are multiples of 9 and less than or equal to 54 that
+	 * represent the possible sizes of a {@link UpperMenu}.
+	 */
+	public enum UpperMenuSize {
+		
 		NINE(9), EIGHTEEN(18), TWENTY_SEVEN(27), THIRTY_SIX(36), FORTY_FIVE(45), FIFTY_FOUR(54);
 
+		/**
+		 * The {@code int} value of this size.
+		 */
 		private int value;
 
-		private TopMenuSize(int value) {
+		private UpperMenuSize(int value) {
 			this.value = value;
 		}
 
-		public int getValue() {
+		/**
+		 * Returns the {@code int} value of this size.
+		 */
+		int getValue() {
 			return value;
 		}
 

@@ -19,8 +19,10 @@ public class Noise {
 	private SoundCategory category;
 
 	/**
-	 * Only usable for playing to individual player.
-	 * 
+	 * Constructs a new noise that is <b>only usable for playing to individual
+	 * player</b>. Invoking {@link Noise#play()} on this noise will result in an
+	 * {@link IllegalStateException} being thrown. Use {@link Noise#play(Player)}
+	 * instead.
 	 */
 	public Noise(Sound type) {
 		this.type = type;
@@ -60,7 +62,6 @@ public class Noise {
 
 	/**
 	 * Only usable for playing to individual player.
-	 * 
 	 */
 	public Noise(Sound type, SoundCategory category) {
 		this.type = type;
@@ -103,12 +104,8 @@ public class Noise {
 	 */
 	public void play() {
 		if (source == null) {
-			try {
-				throw new Exception(
-						"Can only use play() when the source is set. Use play(Player) instead or use a different constructor to set source");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			throw new IllegalStateException(
+					"Can only use play() when the source is set. Use play(Player) instead or use a different constructor to set source");
 		}
 		World world = source.getWorld();
 		if (category == null) {
@@ -121,8 +118,7 @@ public class Noise {
 	/**
 	 * Plays to a specific player only.
 	 * 
-	 * @param p
-	 *            the player
+	 * @param p the player
 	 */
 	public void play(Player p) {
 		if (category == null) {

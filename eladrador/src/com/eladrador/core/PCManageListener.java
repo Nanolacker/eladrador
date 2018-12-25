@@ -3,6 +3,7 @@ package com.eladrador.core;
 import java.util.ArrayList;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -14,43 +15,58 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.eladrador.common.AbstractGameManager;
 import com.eladrador.common.GPlugin;
-import com.eladrador.common.character.PlayerCharacter;
+import com.eladrador.common.player.PlayerBackground;
+import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.player.PlayerClass;
 import com.eladrador.common.sound.Noise;
 import com.eladrador.common.ui.Button;
 import com.eladrador.common.ui.ButtonAddress;
 import com.eladrador.common.ui.ButtonToggleType;
-import com.eladrador.common.ui.TopMenu;
-import com.eladrador.common.ui.TopMenu.TopMenuSize;
+import com.eladrador.common.ui.LowerMenu;
+import com.eladrador.common.ui.UIProfile;
+import com.eladrador.common.ui.UpperMenu;
+import com.eladrador.common.ui.UpperMenu.UpperMenuSize;
 import com.eladrador.common.utils.StrUtils;
+import com.eladrador.common.zone.Zone;
 
-import net.md_5.bungee.api.ChatColor;
+public class PCManageListener implements Listener {
 
-public class PcManageListener implements Listener {
+	public static PCManageListener instance;
 
-	public static PcManageListener instance;
-
-	private static final World SPAWN_WORLD = Bukkit.createWorld(new WorldCreator("world_character_select"));
-	private static final Location SPAWN_LOC = new Location(SPAWN_WORLD, 0, 75, 0);
+	private static final World CHARACTER_SELECT_WORLD = Bukkit.createWorld(new WorldCreator("world_character_select"));
+	private static final Location CHARACTER_SELECT_LOC = new Location(CHARACTER_SELECT_WORLD, 0, 75, 0);
 
 	private Button openPCSelectMenuButton;
 	private Button deletePCButton;
-	private Button cancelButton;
+	private Button cancelDeleteButton;
 	private Button deleteConfirmButton;
 	private Button deleteDenyButton;
 
 	private Noise clickNoise = new Noise(Sound.BLOCK_STONE_BUTTON_CLICK_ON);
 	private Noise deleteNoise = new Noise(Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED);
 
-	PcManageListener() {
+	/*
+	 * TEST STUFF
+	 */
+	World spawnWorld = GPlugin.getGameManager().worldByName("world");
+	Location startLoc = new Location(spawnWorld, 0, 70, 0);
+	Zone testZone = new Zone(spawnWorld, "test", 1, ChatColor.BLACK, 1) {
+	};
+	PlayerBackground background = new PlayerBackground("test background", 0, testZone, startLoc) {
+	};
+	PlayerClass playerClass = new PlayerClass("Test Class", 0, Material.IRON_AXE) {
+	};
+
+	PCManageListener() {
 		openPCSelectMenuButton = new Button(ChatColor.BLUE + "Select a Character", null, Material.EMERALD) {
 
 			@Override
 			protected void onToggle(Player player, ButtonToggleType toggleType, ButtonAddress addressClicked) {
+				UpperMenu pcSelectMenu = pcSelectMenu(player);
+				UIProfile uiProf = UIProfile.byPlayer(player);
+				uiProf.openUpperMenu(pcSelectMenu);
 				clickNoise.play(player);
-				TopMenu pcSelectMenu = getNewPCSelectMenu();
-				pcSelectMenu.open(player);
 			}
 
 		};
@@ -58,16 +74,20 @@ public class PcManageListener implements Listener {
 
 			@Override
 			protected void onToggle(Player player, ButtonToggleType toggleType, ButtonAddress addressClicked) {
-				TopMenu pcDeleteMenu = getNewPCDeleteMenu();
-				pcDeleteMenu.open(player);
+				UpperMenu pcDeleteMenu = pcDeleteMenu(player);
+				UIProfile uiProf = UIProfile.byPlayer(player);
+				uiProf.openUpperMenu(pcDeleteMenu);
 				clickNoise.play(player);
 			}
 
 		};
-		cancelButton = new Button(ChatColor.RED + "Cancel", null, Material.BARRIER) {
+		cancelDeleteButton = new Button(ChatColor.RED + "Cancel", null, Material.REDSTONE) {
 
 			@Override
 			protected void onToggle(Player player, ButtonToggleType toggleType, ButtonAddress addressClicked) {
+				UpperMenu pcSelectMenu = pcSelectMenu(player);
+				UIProfile uiProf = UIProfile.byPlayer(player);
+				uiProf.openUpperMenu(pcSelectMenu);
 				clickNoise.play(player);
 			}
 
@@ -80,72 +100,104 @@ public class PcManageListener implements Listener {
 		event.setJoinMessage(null);
 		Player player = event.getPlayer();
 		setup(player);
-		player.getInventory().setItem(1, null);
 	}
 
 	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent event) {
+	private void onPlayerQuit(PlayerQuitEvent event) {
 		event.setQuitMessage(null);
 		Player player = event.getPlayer();
-		AbstractGameManager gameManager = GPlugin.getGameManager();
-		PlayerCharacter pc = (PlayerCharacter) gameManager.charaByEntity(player);
+		PlayerCharacter pc = (PlayerCharacter) PlayerCharacter.byBukkitPlayer(player);
 		if (pc != null) {
-			// pc.saveData();
+			pc.saveData();
 		}
 	}
 
-	private TopMenu getNewPCSelectMenu() {
-		TopMenu menu = new TopMenu(ChatColor.BLACK + "Select a character", TopMenuSize.NINE);
-		for (int i = 0; i < 4; i++) {
-			int menuIndex = i * 2;
-			menu.addButton(getNewPCSelectButton(i), menuIndex);
+	/**
+	 * Sets up a player to select a character.
+	 */
+	private void setup(Player player) {
+		player.teleport(CHARACTER_SELECT_LOC);
+		UIProfile uiProf = UIProfile.byPlayer(player);
+		LowerMenu lowerMenu = uiProf.getLowerMenu();
+		lowerMenu.addButton(openPCSelectMenuButton, 0);
+	}
+
+	private void enterWorld(Player player, int saveSlot) {
+		PlayerCharacter pc = PlayerCharacter.retrieve(player, saveSlot);
+		pc.setBukkitPlayer(player);
+	}
+
+	private UpperMenu pcSelectMenu(Player player) {
+		UpperMenu menu = new UpperMenu(ChatColor.BLACK + "Select a character", UpperMenuSize.NINE);
+		for (int i = 1; i <= 4; i++) {
+			int menuIndex = (i - 1) * 2;
+			menu.addButton(pcSelectButton(player, i), menuIndex);
 		}
 		menu.addButton(deletePCButton, 8);
 		return menu;
 	}
 
-	private TopMenu getNewPCDeleteMenu() {
-		TopMenu menu = new TopMenu(ChatColor.BLACK + "Delete a character", TopMenuSize.NINE);
-		for (int i = 0; i < 4; i++) {
-			int menuIndex = i * 2;
-			menu.addButton(getNewPCDeleteButton(i), menuIndex);
+	private UpperMenu pcDeleteMenu(Player player) {
+		UpperMenu menu = new UpperMenu(ChatColor.BLACK + "Delete a character", UpperMenuSize.NINE);
+		for (int i = 1; i <= 4; i++) {
+			int menuIndex = (i - 1) * 2;
+			menu.addButton(pcDeleteButton(player, i), menuIndex);
 		}
-		menu.addButton(cancelButton, 8);
+		menu.addButton(cancelDeleteButton, 8);
 		return menu;
 	}
 
-	private Button getNewPCSelectButton(int slot) {
-		ArrayList<String> description = StrUtils.stringToParagraph(ChatColor.GRAY + "Create a new character",
-				StrUtils.LORE_CHARS_PER_LINE);
-		Button button = new Button(ChatColor.GREEN + "Slot " + (slot + 1), description, Material.IRON_SWORD) {
+	private Button pcSelectButton(Player player, int saveSlot) {
+		String text;
+		if (PlayerCharacter.saveExists(player, saveSlot)) {
+			text = ChatColor.GREEN + "Save exists";
+		} else {
+			text = ChatColor.GREEN + "Create a new character";
+		}
+		ArrayList<String> description = StrUtils.lineToParagraph(text);
+		boolean pcCreated = PlayerCharacter.saveExists(player, saveSlot);
+		Material mat = pcCreated ? Material.IRON_SWORD : Material.GLASS_PANE;
+		Button button = new Button(ChatColor.BLUE + "Slot " + saveSlot, description, mat) {
 
 			@Override
 			protected void onToggle(Player player, ButtonToggleType toggleType, ButtonAddress addressClicked) {
 				clickNoise.play(player);
+				if (!pcCreated) {
+					PlayerCharacter.createNew(player, saveSlot, background, playerClass);
+				}
+				enterWorld(player, saveSlot);
 			}
 
 		};
 		return button;
 	}
 
-	private Button getNewPCDeleteButton(int slot) {
-		ArrayList<String> description = StrUtils.stringToParagraph(ChatColor.RED + "Delete this character",
-				StrUtils.LORE_CHARS_PER_LINE);
-		Button button = new Button(ChatColor.GREEN + "Slot " + (slot + 1), description, Material.IRON_SWORD) {
+	private Button pcDeleteButton(Player player, int saveSlot) {
+		String unformattedDescription;
+		if (PlayerCharacter.saveExists(player, saveSlot)) {
+			unformattedDescription = ChatColor.RED + "Delete this character";
+		} else {
+			unformattedDescription = ChatColor.GRAY + "No save found";
+		}
+		ArrayList<String> formattedDescription = StrUtils.lineToParagraph(unformattedDescription);
+		boolean pcCreated = PlayerCharacter.saveExists(player, saveSlot);
+		Material mat = pcCreated ? Material.BARRIER : Material.GLASS_PANE;
+		Button button = new Button(ChatColor.BLUE + "Slot " + saveSlot, formattedDescription, mat) {
 
 			@Override
 			protected void onToggle(Player player, ButtonToggleType toggleType, ButtonAddress addressClicked) {
-				deleteNoise.play(player);
-				player.sendMessage(ChatColor.RED + "Character deleted");
-				TopMenu pcSelectMenu = getNewPCSelectMenu();
-				pcSelectMenu.open(player);
+				if (pcCreated) {
+					PlayerCharacter.deleteData(player, saveSlot);
+					deleteNoise.play(player);
+					player.sendMessage(ChatColor.RED + "Character deleted");
+					UpperMenu pcSelectMenu = pcSelectMenu(player);
+					UIProfile uiProf = UIProfile.byPlayer(player);
+					uiProf.openUpperMenu(pcSelectMenu);
+				}
 			}
 
 		};
 		return button;
 	}
 
-	public void setup(Player player) {
-		openPCSelectMenuButton.addToPlayerInventoryMenu(player, 0);
-	}
 }

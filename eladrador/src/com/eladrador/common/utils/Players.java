@@ -22,7 +22,7 @@ public final class Players {
 	}
 
 	/**
-	 * Returns whether there is a {@code Player} near an {@code Location}.
+	 * Returns whether there is a {@code Player} near a {@code Location}.
 	 * 
 	 * @param location the {@code Location} from which nearby {@code Player}s will
 	 *                 be searched for

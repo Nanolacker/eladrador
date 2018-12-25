@@ -7,7 +7,7 @@ public class GClock {
 
 	public static final double UPDATE_PERIOD = 0.05;
 
-	private static double time;
+	private static double time = 0.0;
 
 	public static void start() {
 		RepeatingTask clock = new RepeatingTask(UPDATE_PERIOD) {
@@ -22,8 +22,7 @@ public class GClock {
 	}
 
 	/**
-	 * 
-	 * @return the time in seconds that has passed since the starting of the server
+	 * Returns the time in seconds that has passed since the starting of the server.
 	 */
 	public static double getTime() {
 		return time;

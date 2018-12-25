@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.bukkit.ChatColor;
 
@@ -13,108 +14,108 @@ import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.utils.MathUtils;
 
 /**
- * Represents an axis-aligned bounding box.
+ * Represents an axis-aligned collider.
  */
-public abstract class AABB {
+public abstract class Collider {
+
 	/**
-	 * The {@code Particle} used to draw {@code AABB}s.
+	 * The particle used to draw collideres.
 	 */
-	public static final Particle DEFAULT_DRAW_PARTICLE = Particle.CRIT;
+	private static final Particle DEFAULT_DRAW_PARTICLE = Particle.CRIT;
 	/**
-	 * The period by which {@code AABB}s will be drawn.
+	 * The period by which collider will be drawn.
 	 */
 	private static final double DRAW_PERIOD = 0.1;
 	/**
-	 * How thick drawings of {@code AABB}s will be. The greater this value, the less
-	 * space there is between particles used to draw AABBs.
+	 * How thick layers of particles used to draw collideres will be. The greater
+	 * this value, the less space there is between particles used to draw
+	 * collideres.
 	 */
 	private static final double DRAW_THICKNESS = 4.0;
 
 	/**
-	 * Whether this {@code AABB} will collide and respond to other {@code AABB}s.
+	 * Whether this collider will collide and respond to other collideres.
 	 */
 	private boolean active;
 	/**
-	 * The {@code World} that this {@code AABB} exists in.
+	 * The world that this collider exists in.
 	 */
 	private World world;
 	/**
-	 * Represents the bounds of this {@code AABB}.
+	 * Represents the bounds of this collider.
 	 */
-	private double xMin, xMax, yMin, yMax, zMin, zMax;
+	private double xMin, yMin, zMin, xMax, yMax, zMax;
 	/**
-	 * The {@code Location} representing the point that exists at the center of this
-	 * {@code AABB}.
+	 * The location representing the point that exists at the center of this
+	 * collider.
 	 */
 	private Location center;
 	/**
-	 * Represents the dimensions (i.e. lengths of the edges of this {@code AABB}).
+	 * The lengths of the edges this collider.
 	 */
-	private Vector dimensions;
+	private double lengthX, lengthY, lengthZ;
 	/**
-	 * Stores any miscellaneous data pertaining to this {@code AABB} as
-	 * {@code String}s.
+	 * Stores any miscellaneous data pertaining to this collider as Strings.
 	 */
 	private ArrayList<String> tags;
 	/**
-	 * Whether this {@code AABB} should be "drawn" in its Minecraft world using
+	 * Whether this collider should be "drawn" in its Minecraft world using
 	 * particles to visualize its location and size.
 	 */
 	private boolean drawingEnabled;
 	/**
-	 * The type of pattern in which this {@code AABB} will be drawn when
-	 * {@code drawingEnabled == true}. The default mode is
-	 * {@code AABBDrawMode.WIREFRAME}.
+	 * The type of pattern in which this collider will be drawn when
+	 * {@code drawingEnabled} is true. The default mode is
+	 * {@code ColliderDrawMode.WIREFRAME}.
 	 */
-	private AABBDrawMode drawMode;
+	private ColliderDrawMode drawMode;
 	/**
-	 * The {@code Particle} that will be used to draw this {@code AABB} if
-	 * {@code drawingEnabled == true}.
+	 * The particle that will be used to draw this collider if
+	 * {@code drawingEnabled} is true.
 	 */
 	private Particle drawParticle;
 	/**
-	 * The {@code RepeatingTask} that is used to draw this {@code AABB}.
+	 * The repeating task that is used to draw this collider.
 	 */
 	private RepeatingTask drawTask;
 	/**
-	 * The {@code AABBBucket}s that this {@code AABB} occupies.
+	 * The collider buckets that this collider occupies.
 	 */
-	private ArrayList<AABBBucket> occupiedBuckets;
+	private ArrayList<ColliderBucket> occupiedBuckets;
 	/**
-	 * The {@code AABB}s that this {@code AABB} is currently colliding with.
+	 * The collideres that this collider is currently colliding with.
 	 */
-	private ArrayList<AABB> collidingAABBs;
+	private ArrayList<Collider> collidingColliders;
 
 	/**
-	 * Represents a type of pattern by which {@code AABB}s can be drawn.
+	 * Represents a type of pattern by which collideres can be drawn.
 	 */
-	public static enum AABBDrawMode {
+	public static enum ColliderDrawMode {
 		/**
-		 * Results in a wireframe visual representation of an {@code AABB} when an
-		 * {@code AABB} is drawn using this mode.
+		 * Results in a wireframe visual representation of a collider when it is drawn
+		 * using this mode.
 		 */
 		WIREFRAME,
 		/**
-		 * The entirety of {@code AABB} will be filled when it is drawn using this mode.
+		 * The entirety of collider will be filled when it is drawn using this mode.
 		 */
 		FILL
-
 	}
 
 	/**
-	 * Constructs a new axis-aligned bounding box. The max value on any axis must be
-	 * greater than that axis's min value. Be sure to invoke {@code setActive} to
-	 * activate this {@code AABB} after construction.
+	 * Constructs a new axis-aligned, cuboid collider. The max value on any axis
+	 * must be greater than that axis's min value. Be sure to invoke
+	 * {@code setActive} to activate this collider after construction.
 	 * 
-	 * @param world the {@code World} this {@code AABB} will exist in
-	 * @param xMin  the minimum x value that exists within this {@code AABB}
-	 * @param xMax  the maximum x value that exists within this {@code AABB}
-	 * @param yMin  the minimum y value that exists within this {@code AABB}
-	 * @param yMax  the maximum y value that exists within this {@code AABB}
-	 * @param zMin  the minimum z value that exists within this {@code AABB}
-	 * @param zMax  the maximum z value that exists within this {@code AABB}
+	 * @param world the world this collider will exist in
+	 * @param xMin  the minimum x value that exists within this collider
+	 * @param xMax  the maximum x value that exists within this collider
+	 * @param yMin  the minimum y value that exists within this collider
+	 * @param yMax  the maximum y value that exists within this collider
+	 * @param zMin  the minimum z value that exists within this collider
+	 * @param zMax  the maximum z value that exists within this collider
 	 */
-	public AABB(World world, double xMin, double xMax, double yMin, double yMax, double zMin, double zMax) {
+	public Collider(World world, double xMin, double yMin, double zMin, double xMax, double yMax, double zMax) {
 		this.world = world;
 		if (!(xMax > xMin)) {
 			throw new IllegalArgumentException(
@@ -134,67 +135,81 @@ public abstract class AABB {
 		this.yMax = yMax;
 		this.zMin = zMin;
 		this.zMax = zMax;
-		dimensions = new Vector();
 		updateCenter();
 		updateDimensions();
-		initFields();
+		assignFields();
 	}
 
 	/**
-	 * Constructs a new axis-aligned bounding box. Any length of this {@code AABB}
-	 * must be greater than 0. Be sure to invoke {@code setActive} to activate
-	 * {@code AABB} after construction.
+	 * Constructs a new {@code Collider} from the specified {@link BoundingBox}.
 	 * 
-	 * @param center  the {@code Location}, including the {@code World}, at the
-	 *                center of this {@code AABB}
-	 * @param lengthX the length of this {@code AABB} on the x-axis
-	 * @param lengthY the length of this {@code AABB} on the y-axis
-	 * @param lengthZ the length of this {@code AABB} on the z-axis
+	 * @param world       the world this collider will exist in
+	 * @param boundingBox the collider used to construct this {@code Collider}
 	 */
-	public AABB(Location center, double lengthX, double lengthY, double lengthZ) {
+	public Collider(World world, BoundingBox boundingBox) {
+		this(world, boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(),
+				boundingBox.getMaxY(), boundingBox.getMaxZ());
+	}
+
+	/**
+	 * Constructs a new axis-aligned collider. Any length of this collider must not
+	 * be negative. Be sure to invoke {@code setActive} to activate collider after
+	 * construction.
+	 * 
+	 * @param center  the location, including the world, at the center of this
+	 *                collider
+	 * @param lengthX the length of this collider on the x-axis
+	 * @param lengthY the length of this collider on the y-axis
+	 * @param lengthZ the length of this collider on the z-axis
+	 * 
+	 * @throws IllegalArgumentException if any of the lengths are negative
+	 */
+	public Collider(Location center, double lengthX, double lengthY, double lengthZ) {
 		this.world = center.getWorld();
 		this.center = center;
-		if (lengthX <= 0) {
+		if (lengthX < 0) {
 			throw new IllegalArgumentException(
-					"Impossible dimensions. lengthX " + "(" + lengthX + ") must be greater than 0");
+					"Impossible dimensions. lengthX " + "(" + lengthX + ") cannot be negative");
 		}
-		if (lengthY <= 0) {
+		this.lengthX = lengthX;
+		if (lengthY < 0) {
 			throw new IllegalArgumentException(
-					"Impossible dimensions. lengthY " + "(" + lengthY + ") must be greater than 0");
+					"Impossible dimensions. lengthY " + "(" + lengthY + ") cannot be negative");
 		}
-		if (lengthZ <= 0) {
+		this.lengthY = lengthY;
+		if (lengthZ < 0) {
 			throw new IllegalArgumentException(
-					"Impossible dimensions. lengthZ " + "(" + lengthZ + ") must be greater than 0");
+					"Impossible dimensions. lengthZ " + "(" + lengthZ + ") cannot be negative");
 		}
-		dimensions = new Vector(lengthX, lengthY, lengthZ);
+		this.lengthZ = lengthZ;
 		updateBounds();
-		initFields();
+		assignFields();
 	}
 
 	/**
-	 * Initializes certain fields of this {@code AABB}. Eliminates redundancy in
+	 * Assigns certain fields of this collider. Eliminates redundancy in
 	 * constructors.
 	 */
-	private void initFields() {
+	private void assignFields() {
 		active = false;
 		tags = new ArrayList<String>();
 		drawingEnabled = false;
-		drawMode = AABBDrawMode.WIREFRAME;
+		drawMode = ColliderDrawMode.WIREFRAME;
 		drawParticle = DEFAULT_DRAW_PARTICLE;
 		drawTask = null;
-		occupiedBuckets = new ArrayList<AABBBucket>();
-		collidingAABBs = new ArrayList<AABB>();
+		occupiedBuckets = new ArrayList<ColliderBucket>();
+		collidingColliders = new ArrayList<Collider>();
 	}
 
 	/**
-	 * Returns whether this {@code AABB} will interact with other {@code AABB}s.
+	 * Returns whether this collider will interact with other collideres.
 	 */
 	public boolean getActive() {
 		return active;
 	}
 
 	/**
-	 * Sets whether this {@code AABB} will interact with other {@code AABB}s.
+	 * Sets whether this collider will interact with other collideres.
 	 */
 	public void setActive(boolean active) {
 		this.active = active;
@@ -202,26 +217,25 @@ public abstract class AABB {
 			updateOccupiedBuckets();
 			checkForCollision();
 		} else {
-			for (int i = 0; i < collidingAABBs.size(); i++) {
-				AABB collidingWith = collidingAABBs.get(i);
+			for (int i = 0; i < collidingColliders.size(); i++) {
+				Collider collidingWith = collidingColliders.get(i);
 				onCollisionExit(collidingWith);
 				collidingWith.onCollisionExit(this);
 			}
 		}
-
 	}
 
 	/**
-	 * Returns the {@code World} this {@code AABB} exists in.
+	 * Returns the world this collider exists in.
 	 */
 	public World getWorld() {
 		return world;
 	}
 
 	/**
-	 * Sets the {@code World} that this {@code AABB} will exist in.
+	 * Sets the world that this collider will exist in.
 	 * 
-	 * @param world the {@code World} this {@code AABB} will exist in
+	 * @param world the world this collider will exist in
 	 */
 	public void setWorld(World world) {
 		this.world = world;
@@ -232,45 +246,102 @@ public abstract class AABB {
 		}
 	}
 
+	/**
+	 * Returns the minimum x value that exists inside this collider.
+	 */
 	public double getXMin() {
 		return xMin;
 	}
 
-	public double getXMax() {
-		return xMax;
+	public void setXMin(double xMin) {
+		this.xMin = xMin;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
 	}
 
+	/**
+	 * Returns the minimum y value that exists inside this collider.
+	 */
 	public double getYMin() {
 		return yMin;
 	}
 
-	public double getYMax() {
-		return yMax;
+	public void setYMin(double yMin) {
+		this.yMin = yMin;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
 	}
 
+	/**
+	 * Returns the minimum z value that exists inside this collider.
+	 */
 	public double getZMin() {
 		return zMin;
 	}
 
+	public void setZMin(double zMin) {
+		this.zMin = zMin;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
+	}
+
+	/**
+	 * Returns the maximum x value that exists inside this collider.
+	 */
+	public double getXMax() {
+		return xMax;
+	}
+
+	public void setXMax(double xMax) {
+		this.xMax = xMax;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
+	}
+
+	/**
+	 * Returns the minimum y value that exists inside this collider.
+	 */
+	public double getYMax() {
+		return yMax;
+	}
+
+	public void setYMax(double yMax) {
+		this.yMax = yMax;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
+	}
+
+	/**
+	 * Returns the minimum z value that exists inside this collider.
+	 */
 	public double getZMax() {
 		return zMax;
 	}
 
+	public void setZMax(double zMax) {
+		this.zMax = zMax;
+		updateCenter();
+		updateDimensions();
+		updateOccupiedBuckets();
+	}
+
 	/**
-	 * Returns the {@code Location} of the point that exists at the center of this
-	 * {@code AABB}.
-	 * 
-	 * @return the {@code Location} of the point that exists at the center of this
-	 *         {@code AABB}
+	 * Returns the location of the point that exists at the center of this bounding
+	 * box.
 	 */
 	public Location getCenter() {
 		return center;
 	}
 
 	/**
-	 * Sets the center of this {@code AABB} and updates all bounds accordingly.
+	 * Sets the center of this collider and updates all bounds accordingly.
 	 * 
-	 * @param center the new center of this {@code AABB}
+	 * @param center the new center of this collider
 	 */
 	public void setCenter(Location center) {
 		this.center = center;
@@ -283,19 +354,42 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Returns the dimensions of this {@code AABB}.
+	 * Returns the length of this collider on the x-axis.
 	 */
-	public Vector getDimensions() {
-		return dimensions;
+	public double getLengthX() {
+		return lengthX;
 	}
 
 	/**
-	 * Sets the dimensions of the {@code AABB}.
+	 * Returns the length of this collider on the y-axis.
+	 */
+	public double getLengthY() {
+		return lengthY;
+	}
+
+	/**
+	 * Returns the length of this collider on the z-axis.
+	 */
+	public double getLengthZ() {
+		return lengthZ;
+	}
+
+	/**
+	 * Returns the dimensions of this collider.
+	 */
+	public Vector getDimensions() {
+		return new Vector(lengthX, lengthY, lengthZ);
+	}
+
+	/**
+	 * Sets the dimensions of the collider.
 	 * 
-	 * @param dimensions the new dimensions of this {@code AABB}
+	 * @param dimensions the new dimensions of this collider
 	 */
 	public void setDimensions(Vector dimensions) {
-		this.dimensions = dimensions;
+		lengthX = dimensions.getX();
+		lengthY = dimensions.getY();
+		lengthZ = dimensions.getZ();
 		updateBounds();
 		updateOccupiedBuckets();
 		if (active) {
@@ -304,13 +398,13 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Translates this {@code AABB}. Translating this {@code AABB} so that it
-	 * overlaps with any other {@code AABB}s will result in {@code onCollideEnter}
-	 * being called for each {@code AABB}. Conversely, translating this {@code AABB}
-	 * so that it does not overlap with any {@code AABB}s that previously overlapped
-	 * will result in {@code onCollideExit} being called for each {@code AABB}.
+	 * Translates this collider. Translating this collider so that it overlaps with
+	 * another collideres will result in {@link Collider#onCollisionEnter} being
+	 * called for each collider. Conversely, translating this collider so that it
+	 * does not overlap with any collideres that it previously overlapped with will
+	 * result in {@link Collider#onCollisionExit} being called for each collider.
 	 * 
-	 * @param translate how much to translate this {@code AABB}
+	 * @param translate vector by which to translate this collider
 	 */
 	public void translate(Vector translate) {
 		double x = translate.getX();
@@ -330,25 +424,25 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Adds a tag to this {@code AABB}.
+	 * Adds a tag to this collider.
 	 */
 	public void addTag(String tag) {
 		tags.add(tag);
 	}
 
 	/**
-	 * Returns the tags of this {@code AABB}.
+	 * Returns the tags of this collider.
 	 */
 	public ArrayList<String> getTags() {
 		return tags;
 	}
 
 	/**
-	 * Returns whether this {@code AABB} encompasses a point (in other words,
-	 * whether this point exists within the volume of this {@code AABB}).
+	 * Returns whether this collider encompasses a point (in other words, whether
+	 * this point exists within the volume of this collider).
 	 * 
-	 * @param point the point to be checked
-	 * @return whether this {@code AABB} encompasses the point
+	 * @param point location of the point to be checked
+	 * @return whether this collider encompasses the point
 	 */
 	public boolean encompasses(Location point) {
 		World world = point.getWorld();
@@ -361,8 +455,9 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Enabling drawing will result in a visual representation of this {@code AABB}
-	 * to be made in game using particles. Useful for debugging.
+	 * Enabling drawing will result in a visual representation of this collider to
+	 * be rendered in game using particles. As creating so many particles is very
+	 * costly, this should only be invoked for debugging purposes.
 	 */
 	public void setDrawingEnabled(boolean enabled) {
 		boolean redundant = this.drawingEnabled == enabled;
@@ -372,42 +467,46 @@ public abstract class AABB {
 		this.drawingEnabled = enabled;
 		if (drawingEnabled) {
 			if (drawTask == null) {
-				setDrawTask();
+				assignDrawTask();
 			}
 			drawTask.start();
-			String centerDesc = ChatColor.YELLOW + "center = " + center.getWorld().getName() + ", " + center.getX()
-					+ ", " + center.getY() + ", " + center.getZ();
-			Debug.log(ChatColor.WHITE + "Drawing of AABB (" + ChatColor.WHITE + centerDesc + ChatColor.WHITE
-					+ ") has been enabled.");
+			String centerDesc = String.format(ChatColor.YELLOW + "center = (%.1f, %.1f, %.1f)", center.getX(),
+					center.getY(), center.getZ());
+			Debug.log(ChatColor.WHITE + "Drawing of collider has been enabled. (" + centerDesc + ChatColor.WHITE + ")");
 		} else {
 			drawTask.stop();
 		}
 	}
 
 	/**
-	 * Changes the mode, or pattern, used to draw this {@code AABB}.
+	 * Changes the mode, or pattern, used to draw this collider.
 	 * 
-	 * @param mode the mode with which this {@code AABB} will be drawn
+	 * @param mode the mode with which this collider will be drawn
 	 */
-	public void setDrawMode(AABBDrawMode mode) {
+	public void setDrawMode(ColliderDrawMode mode) {
 		drawMode = mode;
 		if (drawingEnabled) {
 			drawTask.stop();
 		}
-		setDrawTask();
+		assignDrawTask();
 		if (drawingEnabled) {
 			drawTask.start();
 		}
 	}
 
 	/**
-	 * Changes the particle used to draw this {@code AABB} when drawing is enabled.
+	 * Changes the particle used to draw this collider when drawing is enabled.
+	 * 
+	 * @param particle the particle to be used in drawing this collider
 	 */
 	public void setDrawParticle(Particle particle) {
 		drawParticle = particle;
 	}
 
-	private void setDrawTask() {
+	/**
+	 * Assigns {@code drawTask}, the task used to draw this collider.
+	 */
+	private void assignDrawTask() {
 		drawTask = new RepeatingTask(DRAW_PERIOD) {
 
 			@Override
@@ -428,7 +527,7 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Draws this {@code AABB} in a wireframe pattern.
+	 * Draws this collider in a wireframe pattern.
 	 */
 	private void drawWireframe() {
 		// distance between particles used to draw
@@ -476,8 +575,8 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Draws this {@code AABB} in a fill pattern (i.e. the drawing is completely
-	 * filled with particles).
+	 * Draws this collider in a fill pattern (i.e. the drawing is completely filled
+	 * with particles).
 	 */
 	private void drawFill() {
 		// distance between particles used to draw
@@ -498,15 +597,15 @@ public abstract class AABB {
 	 */
 	private void updateBounds() {
 		double xMid = center.getX();
-		double halfLengthX = dimensions.getX() / 2;
+		double halfLengthX = lengthX / 2;
 		xMin = xMid - halfLengthX;
 		xMax = xMid + halfLengthX;
 		double yMid = center.getY();
-		double halfLengthY = dimensions.getY() / 2;
+		double halfLengthY = lengthY / 2;
 		yMin = yMid - halfLengthY;
 		yMax = yMid + halfLengthY;
 		double zMid = center.getZ();
-		double halfLengthZ = dimensions.getZ() / 2;
+		double halfLengthZ = lengthZ / 2;
 		zMin = zMid - halfLengthZ;
 		zMax = zMid + halfLengthZ;
 	}
@@ -522,24 +621,24 @@ public abstract class AABB {
 	}
 
 	/**
-	 * Up dates the dimensions (i.e. lengths) of this {@code AABB}. Bounds must be
+	 * Updates the dimensions (i.e. lengths) of this collider. Bounds must be
 	 * current to update properly.
 	 */
 	private void updateDimensions() {
-		dimensions.setX(xMax - xMin);
-		dimensions.setY(yMax - yMin);
-		dimensions.setZ(zMax - zMin);
+		lengthX = xMax - xMin;
+		lengthY = yMax - yMin;
+		lengthZ = zMax - zMin;
 	}
 
 	/**
-	 * Determines what {@code AABBBucket}s this {@code AABB} should exist in to
-	 * ensure efficient and accurate collision detection. Bounds must be current to
-	 * update properly.
+	 * Determines what collider buckets this collider should exist in to ensure
+	 * efficient and accurate collision detection. Bounds must be current to update
+	 * properly.
 	 */
 	private void updateOccupiedBuckets() {
-		ArrayList<AABBBucket> occupiedBucketsOld = new ArrayList<AABBBucket>(occupiedBuckets);
+		ArrayList<ColliderBucket> occupiedBucketsOld = new ArrayList<ColliderBucket>(occupiedBuckets);
 		occupiedBuckets.clear();
-		int bucketSize = AABBBucket.BUCKET_SIZE;
+		int bucketSize = ColliderBucket.BUCKET_SIZE;
 
 		int bucketXMin = (int) (xMin / bucketSize);
 		int bucketYMin = (int) (yMin / bucketSize);
@@ -553,13 +652,13 @@ public abstract class AABB {
 			for (int yCount = bucketYMin; yCount <= bucketYMax; yCount++) {
 				for (int zCount = bucketZMin; zCount <= bucketZMax; zCount++) {
 					Location bucketAddress = new Location(world, xCount, yCount, zCount);
-					AABBBucket bucket = AABBBucket.bucketByAddress(bucketAddress);
+					ColliderBucket bucket = ColliderBucket.bucketByAddress(bucketAddress);
 					if (bucket == null) {
-						bucket = AABBBucket.createNewBucket(bucketAddress);
+						bucket = ColliderBucket.createNewBucket(bucketAddress);
 					}
-					boolean alreadyEncompassed = bucket.getEncompassedAABBs().contains(this);
+					boolean alreadyEncompassed = bucket.getEncompassedColliders().contains(this);
 					if (!alreadyEncompassed) {
-						bucket.encompassAABB(this);
+						bucket.encompassCollider(this);
 					}
 					occupiedBuckets.add(bucket);
 				}
@@ -567,107 +666,106 @@ public abstract class AABB {
 		}
 
 		for (int i = 0; i < occupiedBucketsOld.size(); i++) {
-			AABBBucket bucket = occupiedBucketsOld.get(i);
+			ColliderBucket bucket = occupiedBucketsOld.get(i);
 			if (!occupiedBuckets.contains(bucket)) {
-				bucket.removeAABB(this);
-				if (bucket.getEncompassedAABBs().isEmpty()) {
+				bucket.removeCollider(this);
+				if (bucket.getEncompassedColliders().isEmpty()) {
 					Location address = bucket.getAddress();
-					AABBBucket.deleteBucket(address);
+					ColliderBucket.deleteBucket(address);
 				}
 			}
 		}
 	}
 
 	/**
-	 * Detects the presence and and absence of collisions between this {@code AABB}
-	 * and other {@code AABB}s and responds appropriately.
+	 * Detects the presence and absence of collisions between this collider and
+	 * other colliders and responds appropriately.
 	 */
 	private void checkForCollision() {
 		for (int i = 0; i < occupiedBuckets.size(); i++) {
-			AABBBucket bucket = occupiedBuckets.get(i);
-			ArrayList<AABB> neighboringAABBs = bucket.getEncompassedAABBs();
-			for (int j = 0; j < neighboringAABBs.size(); j++) {
-				AABB neighboringAABB = neighboringAABBs.get(j);
-				if (neighboringAABB != this && neighboringAABB.getActive() == true) {
-					boolean collides = collides(neighboringAABB);
-					if (collidingAABBs.contains(neighboringAABB)) {
+			ColliderBucket bucket = occupiedBuckets.get(i);
+			ArrayList<Collider> neighboringColliders = bucket.getEncompassedColliders();
+			for (int j = 0; j < neighboringColliders.size(); j++) {
+				Collider neighboringCollider = neighboringColliders.get(j);
+				if (neighboringCollider != this && neighboringCollider.getActive() == true) {
+					boolean collides = collidesWith(neighboringCollider);
+					if (collidingColliders.contains(neighboringCollider)) {
 						if (!collides) {
-							handleCollisionExit(neighboringAABB);
+							handleCollisionExit(neighboringCollider);
 						}
 					} else {
 						if (collides) {
-							handleCollisionEnter(neighboringAABB);
+							handleCollisionEnter(neighboringCollider);
 						}
 					}
 				}
 			}
 		}
-		outerloop: for (int i = 0; i < collidingAABBs.size(); i++) {
-			AABB collidingAABB = collidingAABBs.get(i);
+		outerloop: for (int i = 0; i < collidingColliders.size(); i++) {
+			Collider collidingCollider = collidingColliders.get(i);
 			for (int j = 0; j < occupiedBuckets.size(); j++) {
-				AABBBucket bucket = occupiedBuckets.get(j);
-				if (bucket.getEncompassedAABBs().contains(collidingAABB)) {
+				ColliderBucket bucket = occupiedBuckets.get(j);
+				if (bucket.getEncompassedColliders().contains(collidingCollider)) {
 					continue outerloop;
 				}
 			}
-			handleCollisionExit(collidingAABB);
+			handleCollisionExit(collidingCollider);
 		}
 	}
 
 	/**
-	 * Responds to this {@code AABB} and another {@code AABB} colliding with each
-	 * other. Called when two {@code AABB}s that were colliding no longer overlap
-	 * each other. {@code onCollisionEnter} is called from each of the
-	 * {@code AABB}s.
+	 * Responds to this collider and another collider colliding with each other.
+	 * Called when two collideres that were colliding no longer overlap each other.
+	 * {@code onCollisionEnter} is called from each of the bounding boxes.
 	 * 
-	 * @param other the other {@code AABB} in the collision
+	 * @param other the other collider in the collision
 	 */
-	private void handleCollisionEnter(AABB other) {
-		this.collidingAABBs.add(other);
-		other.collidingAABBs.add(this);
+	private void handleCollisionEnter(Collider other) {
+		this.collidingColliders.add(other);
+		other.collidingColliders.add(this);
 		this.onCollisionEnter(other);
 		other.onCollisionEnter(this);
 	}
 
 	/**
-	 * Responds to this {@code AABB} and another {@code AABB} retracting from a
-	 * collision. Called when two {@code AABB}s that were colliding no longer
-	 * overlap each other. {@code onCollisionExit} is called from each of the
-	 * {@code AABB}s.
+	 * Responds to this collider and another collider retracting from a collision.
+	 * Called when two collideres that were colliding no longer overlap each other.
+	 * {@code onCollisionExit} is called from each of the collideres.
 	 * 
-	 * @param other the other {@code AABB} in the collision
+	 * @param other the other collider in the collision
 	 */
-	private void handleCollisionExit(AABB other) {
-		collidingAABBs.remove(other);
-		other.collidingAABBs.remove(this);
+	private void handleCollisionExit(Collider other) {
+		collidingColliders.remove(other);
+		other.collidingColliders.remove(this);
 		this.onCollisionExit(other);
 		other.onCollisionExit(this);
 	}
 
 	/**
-	 * Returns whether this {@code AABB} collides with another {@code AABB}.
+	 * Returns whether this {@code Collider} is colliding with the specified
+	 * {@code Collider}.
 	 * 
-	 * @param other the other {@code AABB}
-	 * @return whether the two {@code AABB}s are colliding
+	 * @param other the other {@code Collider}
+	 * @return whether the two {@code Collider}s are colliding
 	 */
-	private boolean collides(AABB other) {
+	public boolean collidesWith(Collider other) {
 		return (this.getXMin() <= other.getXMax() && this.getXMax() >= other.getXMin())
 				&& (this.getYMin() <= other.getYMax() && this.getYMax() >= other.getYMin())
 				&& (this.getZMin() <= other.getZMax() && this.getZMax() >= other.getZMin());
 	}
 
 	/**
-	 * Called when this {@code AABB} enters a collision with another {@code AABB}.
+	 * Called when this collider enters a collision with another collider.
 	 * 
-	 * @param other the other {@code AABB} in the collision
+	 * @param other the other collider in the collision
 	 */
-	protected abstract void onCollisionEnter(AABB other);
+	protected abstract void onCollisionEnter(Collider other);
 
 	/**
-	 * Called when this {@code AABB} exits a collision with another {@code AABB}.
+	 * Called when this collider exits a collision with another collider.
 	 * 
-	 * @param other the other {@code AABB} in the collision
+	 * @param other the other collider in the collision
 	 */
-	protected abstract void onCollisionExit(AABB other);
+	protected abstract void onCollisionExit(Collider other);
 
 }

@@ -13,6 +13,7 @@ import org.bukkit.WorldCreator;
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.quest.Quest;
 import com.eladrador.common.ui.UIListener;
+import com.eladrador.common.zone.Zone;
 
 import net.minecraft.server.v1_13_R2.Entity;
 
@@ -23,14 +24,17 @@ public abstract class AbstractGameManager {
 
 	private HashMap<UUID, AbstractCharacter> charaMap;
 	private ArrayList<Quest> quests;
-	private ArrayList<World> worlds;
-	private HashMap<World, ArrayList<Zone>> zones;
+	/**
+	 * Keys are the names of the worlds.
+	 */
+	private HashMap<String, World> worldMap;
+	private HashMap<World, ArrayList<Zone>> zoneMap;
 
 	protected AbstractGameManager() {
 		charaMap = new HashMap<UUID, AbstractCharacter>();
 		quests = new ArrayList<Quest>();
-		worlds = new ArrayList<World>();
-		zones = new HashMap<World, ArrayList<Zone>>();
+		worldMap = new HashMap<String, World>();
+		zoneMap = new HashMap<World, ArrayList<Zone>>();
 
 		GPlugin.registerEvents(new UIListener());
 	}
@@ -63,12 +67,8 @@ public abstract class AbstractGameManager {
 	protected void registerWorld(String worldName) {
 		Server server = GPlugin.getBukkitServer();
 		World world = server.createWorld(new WorldCreator(worldName));
-		worlds.add(world);
-		zones.put(world, new ArrayList<Zone>());
-	}
-
-	public ArrayList<World> getWorlds() {
-		return worlds;
+		worldMap.put(worldName, world);
+		zoneMap.put(world, new ArrayList<Zone>());
 	}
 
 	/**
@@ -78,8 +78,8 @@ public abstract class AbstractGameManager {
 	 */
 	protected void registerZone(Zone zone) {
 		World world = zone.getWorld();
-		if (zones.containsKey(world)) {
-			ArrayList<Zone> zoneList = zones.get(world);
+		if (zoneMap.containsKey(world)) {
+			ArrayList<Zone> zoneList = zoneMap.get(world);
 			zoneList.add(zone);
 		} else {
 			try {
@@ -92,7 +92,7 @@ public abstract class AbstractGameManager {
 	}
 
 	public ArrayList<Zone> getZones(World world) {
-		return zones.get(world);
+		return zoneMap.get(world);
 	}
 
 	/**
@@ -154,6 +154,10 @@ public abstract class AbstractGameManager {
 			}
 		}
 		return null;
+	}
+
+	public World worldByName(String worldName) {
+		return worldMap.get(worldName);
 	}
 
 }

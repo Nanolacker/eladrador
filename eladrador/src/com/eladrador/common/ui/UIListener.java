@@ -1,7 +1,5 @@
 package com.eladrador.common.ui;
 
-import java.util.HashMap;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,6 +7,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
@@ -19,16 +18,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
+import com.eladrador.common.Debug;
+
+/**
+ * A listener that handles events pertaining to UI, such as clicking on buttons.
+ */
 public class UIListener implements Listener {
-
-	/**
-	 * Keeps track of player-UI data.
-	 */
-	static HashMap<Player, UIProfile> profiles;
-
-	static {
-		profiles = new HashMap<Player, UIProfile>();
-	}
 
 	/**
 	 * Creates a UIProfile for a player when they join.
@@ -36,46 +31,60 @@ public class UIListener implements Listener {
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		profiles.put(player, new UIProfile(player));
+		UIProfile.createNewProfile(player);
 	}
 
 	/**
 	 * Deletes the player's UIProfile, as the information is no longer necessary
-	 * given the fact that they've disconnected. Note: An InventoryCloseEvent will
-	 * be fired for any player that disconnects with an inventory open.
+	 * given the fact that they've disconnected. <b>Note:</b> An
+	 * {@code InventoryCloseEvent} will be fired for any player that disconnects
+	 * with an inventory open.
 	 */
 	@EventHandler
 	private void onPlayerDisconnect(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		profiles.remove(player);
+		UIProfile.remove(player);
 	}
 
 	@EventHandler
 	private void onMenuOpen(InventoryOpenEvent event) {
 		Player player = (Player) event.getPlayer();
-		UIProfile profile = profiles.get(player);
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
 		profile.setIsMenuOpen(true);
 	}
 
 	@EventHandler
 	private void onMenuClose(InventoryCloseEvent event) {
 		Player player = (Player) event.getPlayer();
-		UIProfile profile = profiles.get(player);
-		TopMenu topMenu = profile.getOpenTopMenu();
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
+		UpperMenu topMenu = profile.getOpenUpperMenu();
 		if (topMenu != null) {
 			Inventory image = event.getInventory();
 			topMenu.unregisterImage(image);
 			topMenu.onClose(player);
-			profile.setTopMenuOpen(null);
 		}
-		profile.setIsMenuOpen(false);
+		Button cursorButton = profile.getButtonOnCursor();
+		if (cursorButton != null) {
+			UpperMenu discardConfirmMenu = new DiscardButtonOnCursorConfirmMenu(cursorButton);
+			profile.setButtonOnCursor(null);
+			profile.openUpperMenu(discardConfirmMenu);
+		} else {
+			profile.setOpenUpperMenu(null);
+			profile.setIsMenuOpen(false);
+		}
 	}
 
 	/**
-	 * When a player clicks a Button in an inventory view.
+	 * When a player clicks on a button in an inventory view.
 	 */
 	@EventHandler
-	private void onButtonInventoryClick(InventoryClickEvent event) {
+	private void onButtonClickInInventory(InventoryClickEvent event) {
 		ClickType clickType = event.getClick();
 		if (clickType == ClickType.NUMBER_KEY) {
 			// does not permit the use of number keys in an inventory view
@@ -83,23 +92,66 @@ public class UIListener implements Listener {
 			return;
 		}
 		Player player = (Player) event.getWhoClicked();
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
 		Inventory inventory = event.getClickedInventory();
-		if (inventory != null) {
-			UIProfile profile = profiles.get(player);
-			AbstractMenu menu;
+		ButtonContainer menu;
+		ButtonAddress addressClicked;
+		Button button = profile.getButtonOnCursor();
+		if (inventory == null) {
+			menu = null;
+			addressClicked = null;
+		} else {
 			if (inventory.getType() == InventoryType.PLAYER) {
-				menu = profile.getInventoryMenu();
+				menu = profile.getLowerMenu();
 			} else {
-				menu = profile.getOpenTopMenu();
+				menu = profile.getOpenUpperMenu();
 			}
 			int buttonIndex = event.getSlot();
-			Button button = menu.getButton(buttonIndex);
-			if (button != null) {
-				ButtonToggleType toggleType = ButtonToggleType.byClickType(clickType);
-				ButtonAddress addressClicked = new ButtonAddress(menu, buttonIndex);
-				button.onToggle(player, toggleType, addressClicked);
-				event.setCancelled(true);
+			addressClicked = new ButtonAddress(menu, buttonIndex);
+			if (button == null) {
+				button = menu.getButton(buttonIndex);
 			}
+		}
+		if (button != null) {
+			ButtonToggleType toggleType = ButtonToggleType.byClickType(clickType);
+			button.onToggle(player, toggleType, addressClicked);
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	private void onButtonDragInInventory(InventoryDragEvent event) {
+		Player player = (Player) event.getWhoClicked();
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
+		Inventory inventory = event.getInventory();
+		ButtonContainer menu;
+		ButtonAddress addressClicked;
+		Button button = profile.getButtonOnCursor();
+		if (inventory == null) {
+			menu = null;
+			addressClicked = null;
+		} else {
+			if (inventory.getType() == InventoryType.PLAYER) {
+				menu = profile.getLowerMenu();
+			} else {
+				menu = profile.getOpenUpperMenu();
+			}
+			int buttonIndex = (int) event.getInventorySlots().toArray()[0];
+			addressClicked = new ButtonAddress(menu, buttonIndex);
+			if (button == null) {
+				button = menu.getButton(buttonIndex);
+			}
+		}
+		if (button != null) {
+			ButtonToggleType toggleType = ButtonToggleType.STANDARD;
+			button.onToggle(player, toggleType, addressClicked);
+			event.setCancelled(true);
 		}
 	}
 
@@ -109,10 +161,12 @@ public class UIListener implements Listener {
 	@EventHandler
 	private void onButtonHotbarClick(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		UIProfile profile = profiles.get(player);
-		PlayerInventoryMenu invMenu = profile.getInventoryMenu();
-
-		// 0 is the index of the item in their hand
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
+		LowerMenu invMenu = profile.getLowerMenu();
+		// 0 is the index of the item in the hand
 		Button button = invMenu.getButton(0);
 		if (button != null) {
 			Action action = event.getAction();
@@ -148,8 +202,11 @@ public class UIListener implements Listener {
 	@EventHandler
 	private void onButtonHotbarActivate(PlayerItemHeldEvent event) {
 		Player player = event.getPlayer();
-		UIProfile profile = profiles.get(player);
-		PlayerInventoryMenu invMenu = profile.getInventoryMenu();
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
+		LowerMenu invMenu = profile.getLowerMenu();
 		int slot = event.getNewSlot();
 		Button button = invMenu.getButton(slot);
 		if (button != null) {
@@ -164,13 +221,15 @@ public class UIListener implements Listener {
 		// determines whether the item was dropped in the inventory view, or by tapping
 		// 'Q' with the item selected on the hotbar
 		Player player = event.getPlayer();
-		UIProfile profile = profiles.get(player);
+		UIProfile profile = UIProfile.byPlayer(player);
+		if (profile == null) {
+			return;
+		}
 		if (!profile.getIsMenuOpen()) {
 			player.sendMessage("q");
 		} else {
 			player.sendMessage("not q");
 		}
-
 	}
 
 	@EventHandler
@@ -178,7 +237,6 @@ public class UIListener implements Listener {
 		Player player = (Player) event.getWhoClicked();
 		if (event.getSlotType().equals(SlotType.OUTSIDE)) {
 			event.setCancelled(true);
-
 		}
 	}
 

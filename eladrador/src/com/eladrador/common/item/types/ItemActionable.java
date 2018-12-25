@@ -1,6 +1,6 @@
 package com.eladrador.common.item.types;
 
-import com.eladrador.common.character.PlayerCharacter;
+import com.eladrador.common.player.PlayerCharacter;
 
 /**
  * Interface for GItemStacks with which a player can perform an action.

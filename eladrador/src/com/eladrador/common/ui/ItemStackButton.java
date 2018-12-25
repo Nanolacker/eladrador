@@ -2,8 +2,8 @@ package com.eladrador.common.ui;
 
 import org.bukkit.entity.Player;
 
-import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.item.types.GItemStack;
+import com.eladrador.common.player.PlayerCharacter;
 
 public class ItemStackButton extends Button {
 

@@ -3,10 +3,15 @@ package com.eladrador.common.quest;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.eladrador.common.character.PlayerCharacter;
+import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.quest.persistence.QuestState;
 
 public abstract class Quest {
+
+	/**
+	 * Keys are the quest IDs.
+	 */
+	private static final HashMap<Integer, Quest> QUEST_MAP = new HashMap<Integer, Quest>();
 
 	private String name;
 	private int id;
@@ -18,14 +23,15 @@ public abstract class Quest {
 		this.id = id;
 		this.minLvl = minLvl;
 		phases = new ArrayList<QuestPhase>();
+		QUEST_MAP.put(id, this);
+	}
+
+	public static Quest byID(int id) {
+		return QUEST_MAP.get(id);
 	}
 
 	public String getName() {
 		return name;
-	}
-
-	public int getId() {
-		return id;
 	}
 
 	public ArrayList<QuestPhase> getPhases() {
@@ -46,7 +52,7 @@ public abstract class Quest {
 		if (!questStateMap.containsKey(id)) {
 			return QuestStatus.NOT_AVAILABLE;
 		}
-		QuestState state = questStateMap.get(id);
+		QuestState state = questStateMap.get(this);
 		QuestPhase activePhase = state.getActivePhase();
 		if (activePhase == null) {
 			return QuestStatus.COMPLETE;

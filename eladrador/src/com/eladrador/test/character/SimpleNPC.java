@@ -3,30 +3,34 @@ package com.eladrador.test.character;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.Damager;
-import com.eladrador.common.collision.AABB;
-import com.eladrador.common.collision.AABB.AABBDrawMode;
+import com.eladrador.common.collision.Collider;
+import com.eladrador.common.collision.Collider.ColliderDrawMode;
 import com.eladrador.common.scheduling.RepeatingTask;
+import com.eladrador.common.sound.Noise;
 
-public class SimpleNPC extends AbstractCharacter {
+public class SimpleNPC extends AbstractCharacter implements Cloneable {
 
-	private AABB aabb;
-	private Particle drawParticle = Particle.BUBBLE_POP;
+	private Collider aabb;
+	private Particle drawParticle = Particle.CRIT;
 
-	public static final double SPEED = 1;
+	public static double speed = 0;
 
-	public SimpleNPC(Location loc, double maxHealth) {
-		super(ChatColor.RED + "The Big Bad Box", 1, maxHealth, loc);
-		aabb = new AABB(loc, 5, 5, 5) {
+	public SimpleNPC(Location loc) {
+		super(ChatColor.RED + "The Big Bad Bounding Box", 1, 25, loc);
+		aabb = new Collider(loc, 4, 4, 4) {
 
-			protected void onCollisionEnter(AABB other) {
+			protected void onCollisionEnter(Collider other) {
 				damage(5, null);
 				setDrawParticle(Particle.DAMAGE_INDICATOR);
+				Noise painSound = new Noise(Sound.BLOCK_ANVIL_PLACE, location);
+				painSound.play();
 			}
 
-			protected void onCollisionExit(AABB other) {
+			protected void onCollisionExit(Collider other) {
 				setDrawParticle(drawParticle);
 			}
 
@@ -37,9 +41,15 @@ public class SimpleNPC extends AbstractCharacter {
 	private void move() {
 		RepeatingTask mover = new RepeatingTask(0.1) {
 
+			int i = 0;
+
 			@Override
 			protected void run() {
-				setLocation(getLocation().add(0, 0, SPEED));
+				setLocation(getLocation().add(0, 0, speed));
+				if (i % 50 == 0) {
+					speed = -speed;
+				}
+				i++;
 			}
 
 		};
@@ -56,7 +66,7 @@ public class SimpleNPC extends AbstractCharacter {
 	public void spawn() {
 		super.spawn();
 		aabb.setDrawParticle(drawParticle);
-		aabb.setDrawMode(AABBDrawMode.WIREFRAME);
+		aabb.setDrawMode(ColliderDrawMode.WIREFRAME);
 		aabb.setDrawingEnabled(true);
 		aabb.setActive(true);
 	}
@@ -66,11 +76,14 @@ public class SimpleNPC extends AbstractCharacter {
 		super.die(killer);
 		aabb.setActive(false);
 		aabb.setDrawingEnabled(false);
+		location.getWorld().createExplosion(location, 25);
+		//new SimpleNPC(location.clone().add(0, 0, 5)).spawn();
+		//spawn();
 	}
 
 	@Override
-	protected void updateNameplatePosition() {
-		nameplate.setLocation(location.clone().add(0, 3, 0));
+	protected Location getNameplateLocation() {
+		return location.clone().add(0, 2.5, 0);
 	}
 
 }

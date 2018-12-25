@@ -1,19 +1,35 @@
 package com.eladrador.common.ui;
 
+/**
+ * Represents a location of a {@link Button}. Stores the {@link ButtonContainer}
+ * and the index that in that container that said {@code Button} resides in.
+ */
 public class ButtonAddress {
 
-	private AbstractMenu menu;
+	/**
+	 * The container that the associated button resides in.
+	 */
+	private ButtonContainer container;
+	/**
+	 * The index of a container that the associated button resides in.
+	 */
 	private int index;
 
-	ButtonAddress(AbstractMenu menu, int index) {
-		this.menu = menu;
+	ButtonAddress(ButtonContainer menu, int index) {
+		this.container = menu;
 		this.index = index;
 	}
 
-	public AbstractMenu getMenu() {
-		return menu;
+	/**
+	 * Returns the container that the associated button resides in.
+	 */
+	public ButtonContainer getContainer() {
+		return container;
 	}
 
+	/**
+	 * Returns the index of a container that the associated button resides in.
+	 */
 	public int getIndex() {
 		return index;
 	}

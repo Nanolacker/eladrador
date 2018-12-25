@@ -2,11 +2,11 @@ package com.eladrador.common.item.types;
 
 import org.bukkit.Material;
 
-import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.item.ItemContainer;
 import com.eladrador.common.item.ItemQuality;
+import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.quest.QuestObjective;
-import com.eladrador.common.ui.PlayerInventoryMenu;
+import com.eladrador.common.ui.LowerMenu;
 
 /**
  * An GItemStack whose use is restricted to completing quests.

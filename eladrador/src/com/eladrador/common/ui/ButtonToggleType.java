@@ -24,7 +24,7 @@ public enum ButtonToggleType {
 	 */
 	DISCARD;
 
-	public static ButtonToggleType byClickType(ClickType clickType) {
+	static ButtonToggleType byClickType(ClickType clickType) {
 		switch (clickType) {
 		case CONTROL_DROP:
 			return null;

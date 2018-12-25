@@ -6,52 +6,52 @@ import java.util.HashMap;
 import org.bukkit.Location;
 
 /**
- * Stores axis-aligned bounding boxes organized based on location to increase
- * collision detection efficiency and reduce the number of unnecessary
- * calculations. AABBBuckets are represented as cubes lined up face to face,
+ * Stores {@link Collider}s organized based on location to increase collision
+ * detection efficiency and reduce the number of unnecessary calculations.
+ * {@code ColliderBucket} can be visualized as cubes lined up face to face,
  * which each cover a portion of 3-D space.
  */
-final class AABBBucket {
+final class ColliderBucket {
 
 	/**
-	 * The length that all AABBBuckets will have on all axes.
+	 * The length that all ColliderBucket will have on all axes.
 	 */
 	static final int BUCKET_SIZE = 25;
 
 	/**
-	 * A map of Locations to AABBBuckets. The Location keys are not Locations in the
-	 * traditional sense. Instead they function as addresses that don't exactly
-	 * represent world space like a standard Location. Their coordinate values are
-	 * all integers and represent the number of AABBBuckets, whose size is equal to
-	 * BUCKET_SIZE, that this AABBBucket is away from the origin are on an axis.
+	 * The Location keys are not Locations in the traditional sense. Instead they
+	 * function as addresses that don't exactly represent world space like a
+	 * standard Location. Their coordinate values are all integers and represent the
+	 * number of buckets, whose lengths on any axis are equal to BUCKET_SIZE, that
+	 * a given buckets is away from the origin on an axis.
 	 */
-	private static HashMap<Location, AABBBucket> bucketMap;
+	private static HashMap<Location, ColliderBucket> bucketMap;
 
 	static {
-		bucketMap = new HashMap<Location, AABBBucket>();
+		bucketMap = new HashMap<Location, ColliderBucket>();
 	}
 
 	/**
-	 * The axis-aligned bounding boxes that are encompassed entirely or partially by
-	 * this bucket.
+	 * The {@link Collider}s that are encompassed entirely or partially by this
+	 * bucket.
 	 */
-	private ArrayList<AABB> encompassedAABBs;
+	private ArrayList<Collider> encompassedColliders;
 	/**
-	 * Not a {@code Location} in the traditional sense. 
+	 * Not a {@code Location} in the traditional sense.
 	 */
 	private Location address;
 
-	private AABBBucket(Location address) {
+	private ColliderBucket(Location address) {
 		this.address = address;
-		encompassedAABBs = new ArrayList<AABB>();
+		encompassedColliders = new ArrayList<Collider>();
 	}
 
-	static AABBBucket bucketByAddress(Location address) {
+	static ColliderBucket bucketByAddress(Location address) {
 		return bucketMap.get(address);
 	}
 
-	static AABBBucket createNewBucket(Location bucketAddress) {
-		AABBBucket bucket = new AABBBucket(bucketAddress);
+	static ColliderBucket createNewBucket(Location bucketAddress) {
+		ColliderBucket bucket = new ColliderBucket(bucketAddress);
 		bucketMap.put(bucketAddress, bucket);
 		return bucket;
 	}
@@ -64,16 +64,16 @@ final class AABBBucket {
 		return address;
 	}
 
-	void encompassAABB(AABB aabb) {
-		encompassedAABBs.add(aabb);
+	void encompassCollider(Collider collider) {
+		encompassedColliders.add(collider);
 	}
 
-	void removeAABB(AABB aabb) {
-		encompassedAABBs.remove(aabb);
+	void removeCollider(Collider collider) {
+		encompassedColliders.remove(collider);
 	}
 
-	ArrayList<AABB> getEncompassedAABBs() {
-		return encompassedAABBs;
+	ArrayList<Collider> getEncompassedColliders() {
+		return encompassedColliders;
 	}
 
 }

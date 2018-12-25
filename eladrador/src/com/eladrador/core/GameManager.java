@@ -7,8 +7,9 @@ public class GameManager extends AbstractGameManager {
 
 	@Override
 	public void onEnable() {
-		PcManageListener.instance = new PcManageListener();
-		GPlugin.registerEvents(PcManageListener.instance);
+		registerWorld("world");
+		PCManageListener.instance = new PCManageListener();
+		GPlugin.registerEvents(PCManageListener.instance);
 	}
 
 	@Override

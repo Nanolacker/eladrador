@@ -12,7 +12,7 @@ public final class StrUtils {
 	 * The ideal amount of characters per line to display in the {@code lore} of an
 	 * {@code ItemStack}.
 	 */
-	public static final int LORE_CHARS_PER_LINE = 18;
+	public static final int IDEAL_CHARACTERS_PER_LINE = 18;
 
 	/**
 	 * Hides constructor.
@@ -22,24 +22,40 @@ public final class StrUtils {
 	}
 
 	/**
-	 * Converts a String into a paragraph by splitting it into multiple lines.
-	 * Anytime 'n' is present in the passed in String, a new line will be started in
-	 * this paragraph.
+	 * Converts a line {@code String} into a paragraph by splitting it into multiple
+	 * lines. Any time '\n' is present in the passed in String, a new line will be
+	 * started in this paragraph. Each line in the paragraph can be a maximum of
+	 * {@link StrUtils#IDEAL_CHARACTERS_PER_LINE} visible characters long.
 	 * 
-	 * @param str             the String to be converted
+	 * @param line the line {@code String} to be converted
+	 */
+	public static ArrayList<String> lineToParagraph(String line) {
+		return lineToParagraph(line, IDEAL_CHARACTERS_PER_LINE);
+	}
+
+	/**
+	 * Converts a line {@code String} into a paragraph by splitting it into multiple
+	 * lines. Any time '\n' is present in the passed in String, a new line will be
+	 * started in this paragraph.
+	 * 
+	 * @param line            the line {@code String} to be converted
 	 * @param maxCharsPerLine the maximum number of visible characters to be present
 	 *                        in a line of this paragraph before a new line is
 	 *                        started
+	 * @throws IllegalArgumentException if maxCharsPerLine is 0
 	 */
-	public static ArrayList<String> stringToParagraph(String str, int maxCharsPerLine) {
+	public static ArrayList<String> lineToParagraph(String line, int maxCharsPerLine) {
+		if (maxCharsPerLine == 0) {
+			throw new IllegalArgumentException("maxCharsPerLine cannot be 0");
+		}
 		ArrayList<String> parag = new ArrayList<String>();
 		String prevChatColor;
 		boolean complete = false;
 		while (!complete) {
 			int currentLineTotalCharCount = 0;
 			int currentLineVisibleCharCount = 0; // number of chars excluding ChatColor related chars
-			for (int i = 0; i < str.length() && currentLineVisibleCharCount < maxCharsPerLine; i++) {
-				char c = str.charAt(i);
+			for (int i = 0; i < line.length() && currentLineVisibleCharCount < maxCharsPerLine; i++) {
+				char c = line.charAt(i);
 				if (c == '§') {
 					currentLineTotalCharCount += 2;
 					i++; // skips over next ChatColor associated char
@@ -51,28 +67,27 @@ public final class StrUtils {
 					currentLineVisibleCharCount += 1;
 				}
 			}
-			String currentLine = str.substring(0, currentLineTotalCharCount);
-			boolean lastLine = str.length() == currentLineTotalCharCount;
-			if (lastLine) {
+			String currentLine = line.substring(0, currentLineTotalCharCount);
+			if (line.length() == currentLineTotalCharCount) {
 				complete = true;
 			} else {
+				char lastChar = line.charAt(currentLineTotalCharCount - 1);
 				// if a word was split when the String was cut
-				char lastChar = str.charAt(currentLineTotalCharCount - 1);
 				boolean severedWord = lastChar != ' ' && lastChar != '\n';
 				if (severedWord) {
 					int lastSpaceIndex = currentLine.lastIndexOf(' ');
 					if (lastSpaceIndex != -1) {
 						currentLine = currentLine.substring(0, lastSpaceIndex);
 						prevChatColor = ChatColor.getLastColors(currentLine);
-						str = prevChatColor + str.substring(lastSpaceIndex + 1); // +1 for ' '
+						line = prevChatColor + line.substring(lastSpaceIndex + 1); // +1 for ' '
 					} else {
 						prevChatColor = ChatColor.getLastColors(currentLine);
-						str = prevChatColor + str.substring(currentLineTotalCharCount);
+						line = prevChatColor + line.substring(currentLineTotalCharCount);
 					}
 				} else {
 					prevChatColor = ChatColor.getLastColors(currentLine);
 					// +1 for following' '
-					str = prevChatColor + str.substring(currentLineTotalCharCount + (lastChar == ' ' ? 1 : 0));
+					line = prevChatColor + line.substring(currentLineTotalCharCount + (lastChar == ' ' ? 1 : 0));
 				}
 			}
 			parag.add(currentLine);

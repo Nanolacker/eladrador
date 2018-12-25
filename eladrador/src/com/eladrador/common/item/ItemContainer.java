@@ -1,13 +1,17 @@
 package com.eladrador.common.item;
 
+import java.io.Serializable;
+
 import com.eladrador.common.item.types.GItemStack;
 
 /**
  * Superclass for all GItemStack-storing objects.
  * 
  */
-public class ItemContainer {
+public class ItemContainer implements Serializable {
 
+	private static final long serialVersionUID = -1702378942447479050L;
+	
 	private GItemStack[] items;
 
 	public ItemContainer(int capacity) {
