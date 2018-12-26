@@ -24,10 +24,6 @@ final class PlayerCharacterPersistence {
 
 	private static final String SAVES_DIR_PATH = "C:\\Users\\conno\\Eladrador Server\\plugins\\player_character_saves";
 
-	/**
-	 * Returns the stored {@code PlayerCharacter} that corresponds to the specified
-	 * {@code Player} and save slot.
-	 *JGHKGHSDGFHJGFJYJHGFJHGHFJGFYJGFGHFJGFHJDFSGFGDHFDGHJFDGHGFHDFGGHFFGDHFGHFDGHJGHFJ/
 	public static PlayerCharacterSaveData retrieveData(Player bukkitPlayer, int saveSlot) {
 		try {
 			File saveFile = getSaveFile(bukkitPlayer.getName(), saveSlot);
@@ -66,7 +62,7 @@ final class PlayerCharacterPersistence {
 		return saveFile.exists();
 	}
 
-	static File getSaveFile(String playerName, int saveSlot) {
+	private static File getSaveFile(String playerName, int saveSlot) {
 		return new File(SAVES_DIR_PATH + "\\" + playerName + "_" + saveSlot);
 	}
 
