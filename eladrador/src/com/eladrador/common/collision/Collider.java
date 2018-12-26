@@ -581,7 +581,6 @@ public abstract class Collider {
 	private void drawFill() {
 		// distance between particles used to draw
 		double spaceDistance = 1 / DRAW_THICKNESS;
-		World world = getWorld();
 		for (double xCount = xMin; xCount <= xMax; xCount += spaceDistance) {
 			for (double yCount = yMin; yCount <= yMax; yCount += spaceDistance) {
 				for (double zCount = zMin; zCount <= zMax; zCount += spaceDistance) {

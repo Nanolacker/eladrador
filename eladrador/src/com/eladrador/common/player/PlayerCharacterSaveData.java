@@ -7,29 +7,32 @@ import org.bukkit.Location;
 
 import com.eladrador.common.quest.persistence.QuestState;
 
-final class PlayerCharacterSaveData implements Serializable {
+/**
+ * A class used for storing PlayerCharacter data.
+ */
+public final class PlayerCharacterSaveData implements Serializable {
 
 	private static final long serialVersionUID = -5372132800050348883L;
 
-	String name;
-	int saveSlot;
-	int playerBackgroundID;
-	int playerClassID;
-	HashMap<Integer, QuestState> questStateMap;
-	int zoneID;
+	public final String name;
+	public final int saveSlot;
+	public final int playerBackgroundID;
+	public final int playerClassID;
+	public final HashMap<Integer, QuestState> questStateMap;
+	public final int zoneID;
 
 	// stats
-	double xp;
-	double maxHealth;
-	double currentHealth;
-	double maxMana;
-	double currentMana;
-	PlayerCharacterAttributes attributes;
+	public final double xp;
+	public final double maxHealth;
+	public final double currentHealth;
+	public final double maxMana;
+	public final double currentMana;
+	public final PlayerCharacterAttributes attributes;
 
 	// location
-	String worldName;
-	double x, y, z;
-	float yaw, pitch;
+	public final String worldName;
+	public final double x, y, z;
+	public final float yaw, pitch;
 
 	PlayerCharacterSaveData(String name, int saveSlot, int playerBackgroundID, int playerClassID,
 			HashMap<Integer, QuestState> questStateMap, int zoneID, double xp, double maxHealth, double currentHealth,
