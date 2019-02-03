@@ -11,9 +11,6 @@ import net.md_5.bungee.api.ChatColor;
  */
 public final class Debug {
 
-	/**
-	 * Hides constructor.
-	 */
 	private Debug() {
 		// not to be instantiated
 	}
@@ -21,55 +18,68 @@ public final class Debug {
 	/**
 	 * Broadcasts a message to the console and all online players for debugging. If
 	 * a message needs to broadcasted as the server is starting up, invoke
-	 * {@link Debug#logDelayed(String)} instead.
+	 * {@link Debug#logStartupSafe(String)} instead.
 	 * 
 	 * @param message the message to broadcast
 	 */
 	public static void log(String message) {
-		GPlugin.getBukkitServer()
-				.broadcastMessage(ChatColor.WHITE + "" + ChatColor.ITALIC + "[" + ChatColor.BLUE + "" + ChatColor.ITALIC
-						+ "DEBUG" + ChatColor.WHITE + ChatColor.ITALIC + ":" + ChatColor.RESET + " " + message
-						+ ChatColor.WHITE + "" + ChatColor.ITALIC + "]");
+		logImpl(message, false);
 	}
 
-	public static void log(boolean b) {
-		log(b + "");
+	public static void log(Object message) {
+		logImpl(message.toString(), false);
 	}
 
-	public static void log(double d) {
-		log(d + "");
+	public static void log(boolean message) {
+		logImpl(message + "", false);
+	}
+
+	public static void log(double message) {
+		logImpl(message + "", false);
 	}
 
 	/**
-	 * Broadcasts a message to the console and all online players for debugging at a
-	 * very short delay. Invoke this if a message needs to broadcasted as the server
-	 * is starting up.
+	 * Broadcasts a message to the console and all online players for debugging.
+	 * Invoke this if a message needs to broadcasted as the server is starting up.
 	 * 
 	 * @param message the message to broadcast
 	 */
-	public static void logDelayed(String message) {
-		/*
-		 * If a message is broadcasted immediately as the server is starting, a bug
-		 * prevents the message from printing. As such, a DelayedTask is used to make
-		 * printing debug messages on startup possible.
-		 */
-		DelayedTask task = new DelayedTask(0.0) {
-
-			@Override
-			protected void run() {
-				log(message);
-			}
-
-		};
-		task.start();
+	public static void logStartupSafe(String message) {
+		logImpl(message, true);
 	}
 
-	public static void logDelayed(boolean b) {
-		log(b + "");
+	public static void logStartupSafe(Object message) {
+		logImpl(message.toString(), true);
 	}
 
-	public static void logDelayed(double d) {
-		log(d + "");
+	public static void logStartupSafe(boolean message) {
+		logImpl(message + "", true);
+	}
+
+	public static void logStartupSafe(double message) {
+		logImpl(message + "", true);
+	}
+
+	private static void logImpl(String message, boolean delayed) {
+		Thread thread = Thread.currentThread();
+		StackTraceElement stackTractElement = thread.getStackTrace()[3];
+		String debugMessage = debugMessage(message, stackTractElement);
+		if (delayed) {
+			new DelayedTask(0.0) {
+
+				@Override
+				protected void run() {
+					GPlugin.getBukkitServer().broadcastMessage(debugMessage);
+				}
+
+			}.start();
+		} else {
+			GPlugin.getBukkitServer().broadcastMessage(debugMessage);
+		}
+	}
+
+	private static String debugMessage(String message, StackTraceElement caller) {
+		return ChatColor.BLUE + "[DEBUG] " + ChatColor.RESET + message + ChatColor.RESET + "\n" + caller;
 	}
 
 	/**

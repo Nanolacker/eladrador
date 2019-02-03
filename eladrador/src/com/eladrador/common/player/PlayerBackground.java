@@ -2,6 +2,7 @@ package com.eladrador.common.player;
 
 import java.util.HashMap;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.Listener;
 
@@ -18,6 +19,7 @@ public abstract class PlayerBackground implements Listener {
 
 	private String name;
 	private int id;
+	private ChatColor displayColor;
 	private Zone startZone;
 	private Location startLoc;
 

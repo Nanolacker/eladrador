@@ -35,8 +35,6 @@ public abstract class AbstractGameManager {
 		quests = new ArrayList<Quest>();
 		worldMap = new HashMap<String, World>();
 		zoneMap = new HashMap<World, ArrayList<Zone>>();
-
-		GPlugin.registerEvents(new UIListener());
 	}
 
 	public abstract void onEnable();

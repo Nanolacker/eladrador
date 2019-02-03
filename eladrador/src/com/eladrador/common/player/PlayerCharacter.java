@@ -6,13 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
 import com.eladrador.common.collision.Collider;
-import com.eladrador.common.item.ItemContainer;
-import com.eladrador.common.item.types.GItemStack;
+import com.eladrador.common.item.GameItem;
+import com.eladrador.common.item.GameItemContainer;
 import com.eladrador.common.quest.persistence.QuestState;
 import com.eladrador.common.utils.CharacterEntityMovementSynchronizer;
 import com.eladrador.common.utils.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
@@ -31,9 +30,9 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	private HashMap<Integer, QuestState> questStateMap;
 	private Zone zone;
-	private ItemContainer inventory;
-	private ItemContainer hotbar;
-	private GItemStack inHandItem;
+	private GameItemContainer inventory;
+	private GameItemContainer hotbar;
+	private GameItem inHandItem;
 	private double xp;
 	private double maxMana;
 	private double currentMana;
@@ -98,18 +97,6 @@ public class PlayerCharacter extends AbstractCharacter {
 				data.xp, data.maxHealth, data.currentHealth, data.maxMana, data.currentMana, data.attributes, location);
 	}
 
-	public static void deleteData(Player bukkitPlayer, int saveSlot) {
-		PlayerCharacterPersistence.deleteData(bukkitPlayer, saveSlot);
-	}
-
-	/**
-	 * Returns {@code true} if a {@code PlayerCharacter} has been created that
-	 * corresponds to the specified Bukkit Player and save slot.
-	 */
-	public static boolean saveExists(Player bukkitPlayer, int saveSlot) {
-		return PlayerCharacterPersistence.saveExists(bukkitPlayer, saveSlot);
-	}
-
 	public static PlayerCharacter byBukkitPlayer(Player bukkitPlayer) {
 		return PLAYER_CHARACTER_MAP.get(bukkitPlayer);
 	}
@@ -157,15 +144,15 @@ public class PlayerCharacter extends AbstractCharacter {
 		return questStateMap;
 	}
 
-	public ItemContainer getInventory() {
+	public GameItemContainer getInventory() {
 		return inventory;
 	}
 
-	public ItemContainer getHotbar() {
+	public GameItemContainer getHotbar() {
 		return hotbar;
 	}
 
-	public GItemStack getInHandItem() {
+	public GameItem getInHandItem() {
 		return inHandItem;
 	}
 

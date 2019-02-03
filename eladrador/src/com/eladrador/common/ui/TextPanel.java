@@ -59,7 +59,6 @@ public class TextPanel {
 	 * The text rendered by this {@code TextPanel}.
 	 */
 	private String text;
-
 	/**
 	 * The text that has been formatted to be rendered across multiple lines.
 	 */
@@ -225,9 +224,9 @@ public class TextPanel {
 		Location temp = this.location;
 		this.location = location;
 		if (visible) {
+			Vector movement = location.toVector().subtract(temp.toVector());
 			for (int i = 0; i < entities.size(); i++) {
 				EntityArmorStand entity = entities.get(i);
-				Vector movement = location.toVector().subtract(temp.toVector());
 				entity.move(null, movement.getX(), movement.getY(), movement.getZ());
 			}
 		}

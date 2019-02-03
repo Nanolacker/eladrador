@@ -1,25 +1,24 @@
 package com.eladrador.common.ui;
 
 import java.util.HashMap;
-
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import com.eladrador.common.Debug;
+import com.eladrador.common.GPlugin;
 import com.eladrador.common.scheduling.DelayedTask;
 
 /**
- * An bridge between players and the UI.
+ * A bridge between players and the custom UI.
  */
 public class UIProfile {
 
 	/**
 	 * Keeps track of player-UI data.
 	 */
-	static final HashMap<Player, UIProfile> PROFILES_MAP = new HashMap<Player, UIProfile>();
+	private static final HashMap<Player, UIProfile> profilesMap = new HashMap<Player, UIProfile>();
 
 	/**
-	 * The player that this profile represents.
+	 * The player that this {@code UIProfile} represents.
 	 */
 	private final Player player;
 	/**
@@ -27,13 +26,11 @@ public class UIProfile {
 	 * inventory.
 	 */
 	private final LowerMenu lowerMenu;
-
 	/**
 	 * The {@link UpperMenu} that is currently open. {@code null} if there is none
 	 * open.
 	 */
 	private UpperMenu openUpperMenu;
-
 	/**
 	 * The {@link Button} whose image is held in the off hand slot of a player.
 	 */
@@ -44,13 +41,13 @@ public class UIProfile {
 	 */
 	private Button buttonOnCursor;
 	/**
-	 * Whether the player associated with this profile has a menu open, be it lower
-	 * or upper.
+	 * Whether the player associated with this {@code UIProfile} has a menu open, be
+	 * it lower or upper.
 	 */
-	private boolean isMenuOpen;
+	private boolean menuIsOpen;
 
 	/**
-	 * Constructs a new UIProfile for a Player. Only to be invoked when said Player
+	 * Constructs a new UIProfile for a player. Only to be invoked when said player
 	 * is joining.
 	 */
 	UIProfile(Player player) {
@@ -59,28 +56,29 @@ public class UIProfile {
 		openUpperMenu = null;
 		offHandButton = null;
 		buttonOnCursor = null;
-		isMenuOpen = false;
+		menuIsOpen = false;
 	}
 
 	/**
-	 * Returns the UIProfile representing the specified player.
+	 * Returns the {@code UIProfile} corresponding to the specified player.
 	 */
-	public static UIProfile byPlayer(Player player) {
-		return PROFILES_MAP.get(player);
+	public static UIProfile forPlayer(Player player) {
+		return profilesMap.get(player);
 	}
 
 	/**
-	 * Creates and stores a new UIProfile representing the specified player.
+	 * Creates and stores a new {@code UIProfile} corresponding to the specified
+	 * player.
 	 */
 	static void createNewProfile(Player player) {
-		PROFILES_MAP.put(player, new UIProfile(player));
+		profilesMap.put(player, new UIProfile(player));
 	}
 
 	/**
-	 * Removes the UIProfile representing the specified player from storage.
+	 * Deletes the {@code UIProfile} representing the specified player from storage.
 	 */
-	static void remove(Player player) {
-		PROFILES_MAP.remove(player);
+	static void deleteProfile(Player player) {
+		profilesMap.remove(player);
 	}
 
 	/**
@@ -101,24 +99,14 @@ public class UIProfile {
 	/**
 	 * Opens a {@link UpperMenu} for the player of this profile.
 	 * 
-	 * @param upperMenu the {@link UpperMenu} to be opened
+	 * @param menu the menu to be opened
 	 */
-	public void openUpperMenu(UpperMenu upperMenu) {
-		Inventory image = upperMenu.getNewImage();
+	public void openMenu(UpperMenu menu) {
 		closeMenus();
-		// A delay is necessary if the player is opening a menu immediately after
-		// closing one. Odd behavior arises otherwise.
-		DelayedTask openInventory = new DelayedTask(0.0) {
-
-			@Override
-			public void run() {
-				player.openInventory(image);
-			}
-
-		};
-		openInventory.start();
-		upperMenu.registerImage(image);
-		setOpenUpperMenu(upperMenu);
+		Inventory image = menu.getImage();
+		player.openInventory(image);
+		openUpperMenu = menu;
+		menuIsOpen = true;
 	}
 
 	/**
@@ -126,51 +114,50 @@ public class UIProfile {
 	 * any.
 	 */
 	public void closeMenus() {
-		if (isMenuOpen) {
+		if (menuIsOpen) {
 			player.closeInventory();
 		}
 	}
 
 	/**
-	 * Returns the button whose image is on the cursor of a player while their
-	 * inventory is open.
+	 * Returns the {@link Button} whose image is on the cursor of a player while
+	 * their inventory is open.
 	 */
 	public Button getButtonOnCursor() {
 		return buttonOnCursor;
 	}
 
 	/**
-	 * Sets the button whose image is on the cursor of a player while their
+	 * Sets the {@link Button} whose image is on the cursor of a player while their
 	 * inventory is open.
 	 */
 	public void setButtonOnCursor(Button button) {
 		buttonOnCursor = button;
-		if (button != null) {
-			player.setItemOnCursor(button.getNewImage());
-		}
+		player.setItemOnCursor(button == null ? null : button.image());
 	}
 
 	/**
-	 * Returns the Button held in the off hand of the Player represented by this
-	 * profile.
+	 * Returns the {@link Button} held in the off hand of the Player represented by
+	 * this profile.
 	 */
 	public Button getOffHandButton() {
 		return offHandButton;
 	}
 
 	/**
-	 * Sets the value stored concerning the Button held in the off hand of the
-	 * player represented by this profile.
+	 * Sets the value stored concerning the {@link Button} held in the off hand of
+	 * the player represented by this profile.
 	 */
 	public void setOffHandButton(Button button) {
 		offHandButton = button;
 	}
 
 	/**
-	 * Returns whether the player associated with this profile has any menu open.
+	 * Returns whether the player corresponding to this {@code UIProfile} has any
+	 * menu open.
 	 */
 	public boolean getIsMenuOpen() {
-		return isMenuOpen;
+		return menuIsOpen;
 	}
 
 	/**
@@ -186,7 +173,7 @@ public class UIProfile {
 	 * represented by this profile.
 	 */
 	void setIsMenuOpen(boolean open) {
-		isMenuOpen = open;
+		menuIsOpen = open;
 	}
 
 }

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
+	<classpathentry kind="lib" path="lib/spigot-1.13.2.jar">
 		<attributes>
-			<attribute name="module" value="true"/>
+			<attribute name="javadoc_location" value="jar:platform:/resource/eladrador/lib/bukkit-1.9.2-R0.1-20160424.023735-39-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/gson-2.8.5.jar"/>
-	<classpathentry kind="lib" path="lib/spigot-1.13.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

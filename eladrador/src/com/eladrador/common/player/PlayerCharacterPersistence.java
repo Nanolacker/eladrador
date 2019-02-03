@@ -20,9 +20,12 @@ import com.google.common.io.Files;
  * instead of serializing to files.
  *
  */
-final class PlayerCharacterPersistence {
+public final class PlayerCharacterPersistence {
 
 	private static final String SAVES_DIR_PATH = "C:\\Users\\conno\\Eladrador Server\\plugins\\player_character_saves";
+
+	private PlayerCharacterPersistence() {
+	}
 
 	public static PlayerCharacterSaveData retrieveData(Player bukkitPlayer, int saveSlot) {
 		try {
@@ -52,12 +55,16 @@ final class PlayerCharacterPersistence {
 		}
 	}
 
-	static void deleteData(Player bukkitPlayer, int saveSlot) {
+	public static void deleteData(Player bukkitPlayer, int saveSlot) {
 		File saveFile = getSaveFile(bukkitPlayer.getName(), saveSlot);
 		saveFile.delete();
 	}
 
-	static boolean saveExists(Player bukkitPlayer, int saveSlot) {
+	/**
+	 * Returns {@code true} if a {@code PlayerCharacter} has been created that
+	 * corresponds to the specified Bukkit Player and save slot.
+	 */
+	public static boolean saveExists(Player bukkitPlayer, int saveSlot) {
 		File saveFile = getSaveFile(bukkitPlayer.getName(), saveSlot);
 		return saveFile.exists();
 	}

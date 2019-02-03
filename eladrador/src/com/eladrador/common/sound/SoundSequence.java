@@ -188,8 +188,8 @@ public class SoundSequence {
 					double taskExeTime = playNoise.getExeTime();
 					if (taskExeTime >= GClock.getTime()) {
 						playNoise.stop();
-						for (int c = i + 1; c < playTasks.size(); c++) {
-							DelayedTask followingTask = playTasks.get(c);
+						for (int j = i + 1; j < playTasks.size(); j++) {
+							DelayedTask followingTask = playTasks.get(j);
 							followingTask.stop();
 						}
 						break;
@@ -210,8 +210,8 @@ public class SoundSequence {
 					double taskExeTime = playNoise.getExeTime();
 					if (taskExeTime > GClock.getTime()) {
 						playNoise.stop();
-						for (int c = i + 1; c < playTasks.size(); c++) {
-							DelayedTask followingTask = playTasks.get(c);
+						for (int j = i + 1; j < playTasks.size(); j++) {
+							DelayedTask followingTask = playTasks.get(j);
 							followingTask.stop();
 						}
 						break;

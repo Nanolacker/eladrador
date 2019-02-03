@@ -14,11 +14,12 @@ import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.GClock;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.TextPanel;
-import com.eladrador.core.GameManager;
+import com.eladrador.common.ui.UIListener;
+import com.eladrador.test.TestGameManager;
 
 public final class GPlugin extends JavaPlugin {
 
-	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = GameManager.class;
+	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = TestGameManager.class;
 
 	private static Plugin plugin;
 	private static Server server;
@@ -36,6 +37,7 @@ public final class GPlugin extends JavaPlugin {
 		server = getServer();
 		pluginManager = server.getPluginManager();
 		scheduler = server.getScheduler();
+		registerEvents(new UIListener());
 		try {
 			gameManager = GAME_MANAGER_CLASS.getConstructor().newInstance();
 		} catch (Exception e) {

@@ -65,6 +65,10 @@ public abstract class Zone {
 	public int getID() {
 		return id;
 	}
+	
+	public ChatColor getDisplayColor() {
+		return displayColor;
+	}
 
 	private static class ZoneEntranceCollider extends Collider {
 
