@@ -154,7 +154,7 @@ public abstract class AbstractGameManager {
 		return null;
 	}
 
-	public World worldByName(String worldName) {
+	public World worldForName(String worldName) {
 		return worldMap.get(worldName);
 	}
 

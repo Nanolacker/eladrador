@@ -2,6 +2,7 @@ package com.eladrador.common.ui;
 
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.DragType;
 
 /**
  * A way in which a button can be toggled.
@@ -89,7 +90,7 @@ public enum ButtonToggleType {
 		case CONTROL_DROP:
 			return null;
 		case CREATIVE:
-			return null;
+			return LEFT_CLICK_ON_CURSOR;
 		case DOUBLE_CLICK:
 			return LEFT_CLICK_ON_CURSOR;
 		case DROP:
@@ -112,6 +113,17 @@ public enum ButtonToggleType {
 			return null;
 		case WINDOW_BORDER_RIGHT:
 			return null;
+		default:
+			return null;
+		}
+	}
+
+	static ButtonToggleType forDragTypeOnCursor(DragType dragType) {
+		switch (dragType) {
+		case EVEN:
+			return LEFT_CLICK_ON_CURSOR;
+		case SINGLE:
+			return RIGHT_CLICK_ON_CURSOR;
 		default:
 			return null;
 		}

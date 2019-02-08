@@ -26,7 +26,7 @@ public abstract class Quest {
 		QUEST_MAP.put(id, this);
 	}
 
-	public static Quest byID(int id) {
+	public static Quest forID(int id) {
 		return QUEST_MAP.get(id);
 	}
 

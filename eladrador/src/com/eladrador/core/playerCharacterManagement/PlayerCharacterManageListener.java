@@ -49,7 +49,7 @@ public class PlayerCharacterManageListener implements Listener {
 	/*
 	 * TEST STUFF
 	 */
-	World spawnWorld = GPlugin.getGameManager().worldByName("world");
+	World spawnWorld = GPlugin.getGameManager().worldForName("world");
 	Location startLoc = new Location(spawnWorld, 0, 70, 0);
 	Zone testZone = new Zone(spawnWorld, "Melcher", 1, ChatColor.GREEN, 1) {
 	};
@@ -108,7 +108,7 @@ public class PlayerCharacterManageListener implements Listener {
 	private void onPlayerQuit(PlayerQuitEvent event) {
 		event.setQuitMessage(null);
 		Player player = event.getPlayer();
-		PlayerCharacter pc = (PlayerCharacter) PlayerCharacter.byBukkitPlayer(player);
+		PlayerCharacter pc = (PlayerCharacter) PlayerCharacter.forBukkitPlayer(player);
 		if (pc != null) {
 			pc.saveData();
 		}

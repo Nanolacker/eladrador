@@ -28,7 +28,7 @@ public class PlayerCharacterManagerTest implements Listener {
 	@EventHandler
 	private void onLeave(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
-		PlayerCharacter pc = PlayerCharacter.byBukkitPlayer(p);
+		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(p);
 		pc.saveData();
 	}
 

@@ -15,7 +15,6 @@ public class UpperMenu extends AbstractMenu {
 	 */
 	public UpperMenu(String title, int size) {
 		super(GPlugin.getBukkitServer().createInventory(null, size, title));
-		populateImage();
 	}
 
 	/**
@@ -23,7 +22,6 @@ public class UpperMenu extends AbstractMenu {
 	 */
 	public UpperMenu(String title, InventoryType inventoryType) {
 		super(GPlugin.getBukkitServer().createInventory(null, inventoryType, title));
-		populateImage();
 	}
 
 	/**

@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.DragType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
+import com.eladrador.common.Debug;
 import com.eladrador.common.item.DiscardButtonConfirmMenu;
 import com.eladrador.common.scheduling.DelayedTask;
 
@@ -46,6 +48,7 @@ public final class UIListener implements Listener {
 	private void onPlayerDisconnect(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
 		UIProfile.deleteProfile(player);
+		player.getInventory().clear();
 	}
 
 	@EventHandler
@@ -81,8 +84,9 @@ public final class UIListener implements Listener {
 	}
 
 	/*
-	 * When a player clicks on a button in an inventory view. The effect of the
-	 * cursor button always takes priority over a button clicked inside a menu.
+	 * When a player clicks on a button and or clicks with a button on their cursor
+	 * in an inventory view. The effect of the cursor button always takes priority
+	 * over a button clicked inside a menu.
 	 */
 	@EventHandler
 	private void onButtonClickInInventory(InventoryClickEvent event) {
@@ -98,8 +102,12 @@ public final class UIListener implements Listener {
 			return;
 		}
 		Inventory inventory = event.getClickedInventory();
-		Button button = profile.getButtonOnCursor();
-		boolean buttonOnCursor = button != null;
+		Button cursorButton = profile.getButtonOnCursor();
+		boolean isButtonOnCursor = cursorButton != null;
+		Button toggledButton = null;
+		if (isButtonOnCursor) {
+			toggledButton = cursorButton;
+		}
 		ButtonAddress addressClicked;
 		if (inventory == null) {
 			addressClicked = null;
@@ -108,15 +116,15 @@ public final class UIListener implements Listener {
 					: profile.getOpenUpperMenu();
 			int buttonIndex = event.getSlot();
 			addressClicked = new ButtonAddress(menu, buttonIndex);
-			if (button == null) {
-				button = menu.getButton(buttonIndex);
+			if (!isButtonOnCursor) {
+				toggledButton = menu.getButton(buttonIndex);
 			}
 		}
-		if (button != null) {
+		if (toggledButton != null) {
 			event.setCancelled(true);
 			// so the final keyword can be added for use in an anonymous inner class
-			final Button finalButton = button;
-			ButtonToggleType toggleType = buttonOnCursor ? ButtonToggleType.forClickTypeOnCursor(clickType)
+			final Button finalButton = toggledButton;
+			ButtonToggleType toggleType = isButtonOnCursor ? ButtonToggleType.forClickTypeOnCursor(clickType)
 					: ButtonToggleType.forClickTypeInMenu(clickType);
 			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, addressClicked, event);
 			// must be delayed so that the event can fully cancel
@@ -167,7 +175,8 @@ public final class UIListener implements Listener {
 			event.setCancelled(true);
 			// so the final keyword can be added for use in an anonymous inner class
 			final Button finalButton = button;
-			ButtonToggleType toggleType = ButtonToggleType.LEFT_CLICK_ON_CURSOR;
+			DragType dragType = event.getType();
+			ButtonToggleType toggleType = ButtonToggleType.forDragTypeOnCursor(dragType);
 			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, addressClicked, event);
 			// must be delayed so that the event can fully cancel
 			new DelayedTask(0.0) {

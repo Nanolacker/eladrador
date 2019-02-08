@@ -9,6 +9,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.eladrador.common.Debug;
+
 /**
  * Buttons represent graphical objects which can be clicked on by players to
  * execute a certain task. Buttons have a Minecraft item stack counterpart which
@@ -132,13 +134,21 @@ public abstract class Button {
 	 * description, and image material of this button.
 	 */
 	private void updateImages() {
-		for (int i = 0; i < addresses.size(); i++) {
-			ButtonAddress address = addresses.get(i);
-			AbstractMenu menu = address.getMenu();
+		for (ButtonAddress address : addresses) {
+			ButtonContainer container = address.getContainer();
 			int index = address.getIndex();
-			Inventory menuImage = menu.getImage();
-			ItemStack buttonImage = image();
-			menuImage.setItem(index, buttonImage);
+			container.updateButtonImage(index);
+		}
+	}
+
+	/**
+	 * Removes this button from all containers.
+	 */
+	public void delete() {
+		for (ButtonAddress address : addresses) {
+			ButtonContainer container = address.getContainer();
+			int index = address.getIndex();
+			container.setButton(index, null);
 		}
 	}
 

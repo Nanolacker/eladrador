@@ -1,36 +1,43 @@
 package com.eladrador.common.item;
 
-import org.bukkit.entity.Player;
-
-import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.ui.AbstractMenu;
-import com.eladrador.common.ui.LowerMenu;
-import com.eladrador.common.ui.UIProfile;
+import com.eladrador.common.ui.Button;
 
 public class GameInventory {
 
-	private GameItem[] contents;
 	private AbstractMenu menu;
 
-	public GameInventory(int size) {
-		contents = new GameItem[44];
+	public GameInventory(AbstractMenu menu) {
+		this.menu = menu;
+	}
+
+	public GameItem getItem(int index) {
+		validateIndex(index);
+		Button button = menu.getButton(index);
+		if (button instanceof GameItemButton) {
+			return ((GameItemButton) button).getItem();
+		}
+		return null;
 	}
 
 	public void addItem(GameItem item) {
-		for (int i = 0; i < contents.length; i++) {
-			if (contents[i] == null) {
-				contents[i] = item;
-				return;
-			}
-		}
+		// do this
 	}
 
 	public void setItem(int index, GameItem item) {
-		// validate arguments
-
-		contents[index] = item;
+		validateIndex(index);
 		GameItemButton button = new GameItemButton(item);
 		menu.setButton(index, button);
+	}
+
+	private void validateIndex(int index) {
+		int size = menu.getSize();
+		if (index < 0) {
+			throw new IndexOutOfBoundsException("Index (" + index + ") negative");
+		} else if (index >= size) {
+			throw new IndexOutOfBoundsException(
+					"Index (" + index + ") greater than this inventory's size (" + size + ")");
+		}
 	}
 
 }

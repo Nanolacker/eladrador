@@ -8,6 +8,7 @@ public class TestGameManager extends AbstractGameManager {
 
 	@Override
 	public void onEnable() {
+		registerWorld("world");
 		GPlugin.registerEvents(new MenuTestListener());
 	}
 

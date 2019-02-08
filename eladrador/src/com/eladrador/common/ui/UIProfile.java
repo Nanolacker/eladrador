@@ -4,9 +4,6 @@ import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import com.eladrador.common.GPlugin;
-import com.eladrador.common.scheduling.DelayedTask;
-
 /**
  * A bridge between players and the custom UI.
  */
@@ -31,15 +28,8 @@ public class UIProfile {
 	 * open.
 	 */
 	private UpperMenu openUpperMenu;
-	/**
-	 * The {@link Button} whose image is held in the off hand slot of a player.
-	 */
-	private Button offHandButton;
-	/**
-	 * The {@link Button} whose image is on the cursor of a player while they have a
-	 * menu open.
-	 */
-	private Button buttonOnCursor;
+	private Cursor cursor;
+	private OffHand offHand;
 	/**
 	 * Whether the player associated with this {@code UIProfile} has a menu open, be
 	 * it lower or upper.
@@ -54,8 +44,8 @@ public class UIProfile {
 		this.player = player;
 		lowerMenu = new LowerMenu(player);
 		openUpperMenu = null;
-		offHandButton = null;
-		buttonOnCursor = null;
+		cursor = new Cursor(player);
+		offHand = new OffHand(player);
 		menuIsOpen = false;
 	}
 
@@ -124,7 +114,7 @@ public class UIProfile {
 	 * their inventory is open.
 	 */
 	public Button getButtonOnCursor() {
-		return buttonOnCursor;
+		return cursor.getButton(0);
 	}
 
 	/**
@@ -132,8 +122,7 @@ public class UIProfile {
 	 * inventory is open.
 	 */
 	public void setButtonOnCursor(Button button) {
-		buttonOnCursor = button;
-		player.setItemOnCursor(button == null ? null : button.image());
+		cursor.setButton(0, button);
 	}
 
 	/**
@@ -141,15 +130,11 @@ public class UIProfile {
 	 * this profile.
 	 */
 	public Button getOffHandButton() {
-		return offHandButton;
+		return offHand.getButton(0);
 	}
 
-	/**
-	 * Sets the value stored concerning the {@link Button} held in the off hand of
-	 * the player represented by this profile.
-	 */
 	public void setOffHandButton(Button button) {
-		offHandButton = button;
+		offHand.setButton(0, button);
 	}
 
 	/**

@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
+import com.eladrador.common.Debug;
 import com.eladrador.common.event.Event;
 import com.eladrador.common.ui.Button;
-import com.eladrador.common.ui.ButtonToggleEvent;
-import com.eladrador.common.ui.ButtonToggleType;
 import com.eladrador.common.utils.StrUtils;
 
-public class GameItem {
+public final class GameItem {
 
 	private String name;
 	private GameItemType type;
@@ -20,25 +19,24 @@ public class GameItem {
 	private String flavorText;
 	private int currentSize;
 	private int maxSize;
-	private GameItemAddress address;
 	private Event onLeftClickInHand;
 	private Event onRightClickInHand;
 	private Event onSpecialUse;
-
 	private ArrayList<Button> buttons;
 
-	public GameItem(String name, GameItemType type, Material material, String flavorText, int currentSize,
-			int maxSize) {
+	public GameItem(String name, GameItemType type, Material material, GameItemQuality quality, String flavorText,
+			int currentSize, int maxSize) {
 		this.name = name;
 		this.type = type;
 		this.material = material;
+		this.quality = quality;
 		this.flavorText = flavorText;
 		this.currentSize = currentSize;
 		this.maxSize = maxSize;
-		address = new GameItemAddress();
 		onLeftClickInHand = new Event();
 		onRightClickInHand = new Event();
 		onSpecialUse = new Event();
+		buttons = new ArrayList<Button>();
 	}
 
 	public String getName() {
@@ -72,28 +70,66 @@ public class GameItem {
 	}
 
 	public void setCurrentSize(int currentSize) {
-		this.currentSize = currentSize;
-		updateButtons();
+		validateCurrentSize(currentSize);
+		if (currentSize == 0) {
+			delete();
+		} else {
+			this.currentSize = currentSize;
+			updateButtons();
+		}
 	}
 
 	public int getMaxSize() {
 		return maxSize;
 	}
 
-	public GameItemAddress getAddress() {
-		return address;
-	}
-
 	public Event getOnLeftClickInHand() {
+		if (!type.canBeInMainHand()) {
+			throw new IllegalStateException("This item (type " + type + ") cannot be held in the main hand.");
+		}
 		return onLeftClickInHand;
 	}
 
 	public Event getOnRightClickInHand() {
+		if (!type.canBeInMainHand()) {
+			throw new IllegalStateException("This item (type " + type + ") cannot be held in the main hand.");
+		}
 		return onRightClickInHand;
 	}
 
 	public Event getOnSpecialUse() {
+		if (!type.canHaveSpecialUse()) {
+			throw new IllegalStateException("This item (type " + type + ") cannot have a special use.");
+		}
 		return onSpecialUse;
+	}
+
+	/**
+	 * Splits this item, returning a new item that was split from the original. The
+	 * current size of this item is also reduced by the specified amount.
+	 * 
+	 * @param amountToTakeOff the size of the returned item
+	 * @return the new item
+	 */
+	public GameItem split(int amountToTakeOff) {
+		setCurrentSize(currentSize - amountToTakeOff);
+		return new GameItem(name, type, material, quality, flavorText, amountToTakeOff, maxSize);
+	}
+
+	public void stack(GameItem onto) {
+		if (!onto.isStackableWith(onto)) {
+			throw new IllegalArgumentException("Item is not stackable");
+		}
+		stack(onto, currentSize);
+	}
+
+	public void stack(GameItem onto, int howMuch) {
+		if (!onto.isStackableWith(onto)) {
+			throw new IllegalArgumentException("Item is not stackable");
+		}
+		int ontoCurrentSize = onto.currentSize;
+		onto.setCurrentSize(ontoCurrentSize + howMuch);
+		this.setCurrentSize(currentSize - howMuch);
 	}
 
 	/**
@@ -106,7 +142,7 @@ public class GameItem {
 	 */
 	public boolean isStackableWith(GameItem other) {
 		return name.equals(other.name) && type == other.type && material == other.material && quality == other.quality
-				&& flavorText.equals(other.flavorText) && currentSize == other.currentSize && maxSize == other.maxSize;
+				&& flavorText.equals(other.flavorText) && maxSize == other.maxSize;
 	}
 
 	public String displayName() {
@@ -117,7 +153,7 @@ public class GameItem {
 		ArrayList<String> description = new ArrayList<String>();
 		description.add(ChatColor.WHITE + quality.toString());
 		description.add("");
-		description.addAll(StrUtils.lineToParagraph(flavorText));
+		description.addAll(StrUtils.lineToParagraph(ChatColor.WHITE + flavorText));
 		return description;
 	}
 
@@ -135,6 +171,19 @@ public class GameItem {
 			button.setDescription(description());
 			button.setImageMaterial(material);
 			button.setImageSize(currentSize);
+		}
+	}
+
+	private void validateCurrentSize(int currentSize) {
+		if (currentSize > maxSize) {
+			throw new IllegalArgumentException(
+					"Specified size (" + currentSize + ") exceeds max size (" + maxSize + ")");
+		}
+	}
+
+	private void delete() {
+		for (Button button : buttons) {
+			button.delete();
 		}
 	}
 

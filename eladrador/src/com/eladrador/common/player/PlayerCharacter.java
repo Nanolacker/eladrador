@@ -6,12 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
 import com.eladrador.common.collision.Collider;
 import com.eladrador.common.item.GameItem;
-import com.eladrador.common.item.GameItemContainer;
+import com.eladrador.common.item.PlayerInventory;
 import com.eladrador.common.quest.persistence.QuestState;
 import com.eladrador.common.utils.CharacterEntityMovementSynchronizer;
 import com.eladrador.common.utils.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
@@ -19,7 +20,7 @@ import com.eladrador.common.zone.Zone;
 
 public class PlayerCharacter extends AbstractCharacter {
 
-	private static final HashMap<Player, PlayerCharacter> PLAYER_CHARACTER_MAP = new HashMap<Player, PlayerCharacter>();
+	private static final HashMap<Player, PlayerCharacter> playerCharacterMap = new HashMap<Player, PlayerCharacter>();
 
 	private Player bukkitPlayer;
 	private int saveSlot;
@@ -30,9 +31,7 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	private HashMap<Integer, QuestState> questStateMap;
 	private Zone zone;
-	private GameItemContainer inventory;
-	private GameItemContainer hotbar;
-	private GameItem inHandItem;
+	private PlayerInventory inventory;
 	private double xp;
 	private double maxMana;
 	private double currentMana;
@@ -42,20 +41,17 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	private CharacterCollider hitbox;
 
-	/**
-	 * Returns a new, level 1 {@code PlayerCharacter}.
-	 * {@link PlayerCharacter#setBukkitPlayer(Player)} must be invoked on the
-	 * returned {@code PlayerCharacter}.
-	 */
 	private PlayerCharacter(Player bukkitPlayer, int saveSlot, PlayerBackground background, PlayerClass playerClass,
 			HashMap<Integer, QuestState> questStateMap, Zone zone, double xp, double maxHealth, double currentHealth,
 			double maxMana, double currentMana, PlayerCharacterAttributes attributes, Location location) {
 		super(bukkitPlayer.getName(), levelFromXP(xp), maxHealth, location);
+		this.bukkitPlayer = bukkitPlayer;
 		this.saveSlot = saveSlot;
 		this.background = background;
 		this.playerClass = playerClass;
 		this.questStateMap = questStateMap;
 		this.zone = zone;
+		inventory = new PlayerInventory(this);
 		this.xp = xp;
 		this.currentHealth = currentHealth;
 		this.maxMana = maxMana;
@@ -91,14 +87,21 @@ public class PlayerCharacter extends AbstractCharacter {
 		PlayerClass playerClass = PlayerClass.byID(data.playerClassID);
 		PlayerBackground background = PlayerBackground.byID(data.playerBackgroundID);
 		Zone zone = Zone.byID(data.zoneID);
-		World world = GPlugin.getGameManager().worldByName(data.worldName);
+		World world = GPlugin.getGameManager().worldForName(data.worldName);
 		Location location = new Location(world, data.x, data.y, data.z, data.yaw, data.pitch);
 		return new PlayerCharacter(bukkitPlayer, data.saveSlot, background, playerClass, data.questStateMap, zone,
 				data.xp, data.maxHealth, data.currentHealth, data.maxMana, data.currentMana, data.attributes, location);
 	}
 
-	public static PlayerCharacter byBukkitPlayer(Player bukkitPlayer) {
-		return PLAYER_CHARACTER_MAP.get(bukkitPlayer);
+	/**
+	 * Returns the {@code PlayerCharacter} that corresponds to the specified
+	 * {@code Player}.
+	 * 
+	 * @param bukkitPlayer the {@code Player}
+	 * @return
+	 */
+	public static PlayerCharacter forBukkitPlayer(Player bukkitPlayer) {
+		return playerCharacterMap.get(bukkitPlayer);
 	}
 
 	/**
@@ -118,12 +121,13 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	public void setBukkitPlayer(Player bukkitPlayer) {
 		this.bukkitPlayer = bukkitPlayer;
+		Debug.log(location.toString());
 		bukkitPlayer.teleport(location);
 		Location hitboxCenter = location.add(0, 1, 0);
 		CharacterEntityMovementSynchronizer syncer = new CharacterEntityMovementSynchronizer(this, bukkitPlayer,
 				MovementSynchronizeMode.CHARACTER_FOLLOWS_ENTITY);
 		syncer.setEnabled(true);
-		PLAYER_CHARACTER_MAP.put(bukkitPlayer, this);
+		playerCharacterMap.put(bukkitPlayer, this);
 		hitbox = new PlayerCharacterCollider(this, hitboxCenter);
 		hitbox.setActive(true);
 	}
@@ -144,16 +148,12 @@ public class PlayerCharacter extends AbstractCharacter {
 		return questStateMap;
 	}
 
-	public GameItemContainer getInventory() {
+	public PlayerInventory getInventory() {
 		return inventory;
 	}
 
-	public GameItemContainer getHotbar() {
-		return hotbar;
-	}
-
-	public GameItem getInHandItem() {
-		return inHandItem;
+	public GameItem getItemInHand() {
+		return inventory.getItem(0);
 	}
 
 	@Override
