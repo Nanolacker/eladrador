@@ -12,7 +12,6 @@ import org.bukkit.WorldCreator;
 
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.quest.Quest;
-import com.eladrador.common.ui.UIListener;
 import com.eladrador.common.zone.Zone;
 
 import net.minecraft.server.v1_13_R2.Entity;

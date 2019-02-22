@@ -12,17 +12,14 @@ import org.bukkit.util.BoundingBox;
 
 import com.eladrador.common.Debug;
 import com.eladrador.common.item.GameItem;
-import com.eladrador.common.item.GameItemButton;
 import com.eladrador.common.item.GameItemQuality;
+import com.eladrador.common.item.GameItemStack;
 import com.eladrador.common.item.GameItemType;
 import com.eladrador.common.item.PlayerInventory;
 import com.eladrador.common.player.PlayerBackground;
 import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.player.PlayerClass;
 import com.eladrador.common.scheduling.DelayedTask;
-import com.eladrador.common.ui.LowerMenu;
-import com.eladrador.common.ui.UIProfile;
-import com.eladrador.common.ui.UpperMenu;
 import com.eladrador.common.zone.Zone;
 
 public class MenuTestListener implements Listener {
@@ -46,20 +43,31 @@ public class MenuTestListener implements Listener {
 				PlayerCharacter pc = PlayerCharacter.retrieve(player, 0);
 				pc.setBukkitPlayer(player);
 
-				GameItem item1 = new GameItem("Test Item", GameItemType.SHORT_SWORD, Material.ACACIA_WOOD,
-						GameItemQuality.EPIC, "A special sword", 40, 64);
-				Runnable listener = new Runnable() {
-					public void run() {
-						Debug.log("You are very special");
-					}
-				};
-				item1.getOnSpecialUse().addListener(listener);
+				GameItem item1 = new GameItem("Holy Boots of the North", GameItemType.ARMOR_FEET,
+						Material.DIAMOND_BOOTS, GameItemQuality.EPIC,
+						"These boots are very powerful, very holy, very epic.", 1);
 
-				GameItem item2 = new GameItem("FUR", GameItemType.SHORT_SWORD, Material.BLACK_WOOL,
-						GameItemQuality.EPIC, "The big wool", 20, 64);
+				GameItem item2 = new GameItem("Holy Breastplate of the East", GameItemType.ARMOR_HEAD,
+						Material.DIAMOND_CHESTPLATE, GameItemQuality.EPIC,
+						"This breastplate is very powerful, very holy, very epic.", 64);
+
+				GameItem item3 = new GameItem("Crap", GameItemType.CONSUMABLE, Material.COCOA_BEANS,
+						GameItemQuality.COMMON, "Ew", 64);
+				item3.getOnSpecialUse().addListener(new Runnable() {
+					public void run() {
+						Debug.log("crap");
+					}
+				});
+
 				PlayerInventory inventory = pc.getInventory();
-				inventory.setItem(5, item1);
-				inventory.setItem(4, item2);
+
+				GameItemStack itemStack1 = new GameItemStack(item1, 1);
+				GameItemStack itemStack2 = new GameItemStack(item2, 1);
+				GameItemStack itemStack3 = new GameItemStack(item3, 64);
+
+				inventory.setItem(2, itemStack1);
+				inventory.setItem(3, itemStack2);
+				inventory.setItem(4, itemStack3);
 			}
 
 		}.start();

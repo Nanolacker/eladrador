@@ -27,15 +27,19 @@ public final class Debug {
 	}
 
 	public static void log(Object message) {
-		logImpl(message.toString(), false);
+		logImpl(String.valueOf(message), false);
 	}
 
 	public static void log(boolean message) {
-		logImpl(message + "", false);
+		logImpl(String.valueOf(message), false);
+	}
+
+	public static void log(int message) {
+		logImpl(String.valueOf(message), false);
 	}
 
 	public static void log(double message) {
-		logImpl(message + "", false);
+		logImpl(String.valueOf(message), false);
 	}
 
 	/**
@@ -49,15 +53,19 @@ public final class Debug {
 	}
 
 	public static void logStartupSafe(Object message) {
-		logImpl(message.toString(), true);
+		logImpl(String.valueOf(message), true);
 	}
 
 	public static void logStartupSafe(boolean message) {
-		logImpl(message + "", true);
+		logImpl(String.valueOf(message), true);
+	}
+
+	public static void logStartupSafe(int message) {
+		logImpl(String.valueOf(message), true);
 	}
 
 	public static void logStartupSafe(double message) {
-		logImpl(message + "", true);
+		logImpl(String.valueOf(message), true);
 	}
 
 	private static void logImpl(String message, boolean delayed) {
@@ -79,7 +87,11 @@ public final class Debug {
 	}
 
 	private static String debugMessage(String message, StackTraceElement caller) {
-		return ChatColor.BLUE + "[DEBUG] " + ChatColor.RESET + message + ChatColor.RESET + "\n" + caller;
+		String extendedCallerDesc = caller.toString();
+		int start = extendedCallerDesc.indexOf("(") + 1;
+		int end = extendedCallerDesc.length() - 1;
+		String simpleCallerDesc = extendedCallerDesc.substring(start, end);
+		return ChatColor.BLUE + "[DEBUG] " + ChatColor.RESET + message + ChatColor.RESET + "\n" + simpleCallerDesc;
 	}
 
 	/**

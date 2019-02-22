@@ -2,14 +2,12 @@ package com.eladrador.common.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import com.eladrador.common.Debug;
 
 /**
  * Buttons represent graphical objects which can be clicked on by players to
@@ -71,6 +69,10 @@ public abstract class Button {
 		updateImages();
 	}
 
+	public List<String> getDescription() {
+		return description;
+	}
+
 	/**
 	 * Sets the description of this button and updates the lore of all of its images
 	 * accordingly.
@@ -125,7 +127,13 @@ public abstract class Button {
 	 * Unregisters a {@link ButtonAddress} with this button.
 	 */
 	void unregisterAddress(ButtonAddress address) {
-		addresses.remove(address);
+		for (int i = 0; i < addresses.size(); i++) {
+			ButtonAddress element = addresses.get(i);
+			if (address.getContainer() == element.getContainer() && address.getIndex() == element.getIndex()) {
+				addresses.remove(i);
+				return;
+			}
+		}
 	}
 
 	/**
@@ -142,14 +150,27 @@ public abstract class Button {
 	}
 
 	/**
-	 * Removes this button from all containers.
+	 * Returns the addresses at which this button is present.
 	 */
-	public void delete() {
-		for (ButtonAddress address : addresses) {
-			ButtonContainer container = address.getContainer();
-			int index = address.getIndex();
-			container.setButton(index, null);
+	public ButtonAddress[] getAddresses() {
+		return addresses.toArray(new ButtonAddress[addresses.size()]);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Button)) {
+			return false;
 		}
+		Button button = (Button) obj;
+		return displayName.equals(button.displayName) && description.equals(button.description)
+				&& imageMat == button.imageMat && imageSize == button.imageSize;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(displayName, description, imageMat, imageSize);
 	}
 
 	/**

@@ -17,9 +17,9 @@ public enum ButtonToggleType {
 	 */
 	RIGHT_CLICK_IN_HAND,
 	/**
-	 * Tapping 'Q' with the button in hand.
+	 * Tapping 'Q' with the button in the offhand slot.
 	 */
-	TAP_Q_IN_HAND,
+	TAP_Q_IN_MAIN_HAND,
 	/**
 	 * Left-clicking in menu.
 	 */
@@ -29,13 +29,25 @@ public enum ButtonToggleType {
 	 */
 	RIGHT_CLICK_IN_MENU,
 	/**
+	 * Left-clicking in menu while holding down shift.
+	 */
+	SHIFT_LEFT_CLICK_IN_MENU,
+	/**
+	 * Right-clicking in menu while holding down shift.
+	 */
+	SHIFT_RIGHT_CLICK_IN_MENU,
+	/**
 	 * Left-clicking over a menu slot when the button is on the cursor.
 	 */
 	LEFT_CLICK_ON_CURSOR,
 	/**
 	 * Right-clicking over a menu slot when the button is on the cursor.
 	 */
-	RIGHT_CLICK_ON_CURSOR;
+	RIGHT_CLICK_ON_CURSOR,
+	/**
+	 * Tapping the associated number key to toggle a button.
+	 */
+	HOTBAR;
 
 	/**
 	 * Returns the {@link ButtonToggleType} that corresponds to the specified
@@ -63,9 +75,9 @@ public enum ButtonToggleType {
 		case RIGHT:
 			return RIGHT_CLICK_IN_MENU;
 		case SHIFT_LEFT:
-			return LEFT_CLICK_IN_MENU;
+			return SHIFT_LEFT_CLICK_IN_MENU;
 		case SHIFT_RIGHT:
-			return RIGHT_CLICK_IN_MENU;
+			return SHIFT_RIGHT_CLICK_IN_MENU;
 		case UNKNOWN:
 			return null;
 		case WINDOW_BORDER_LEFT:
@@ -104,9 +116,11 @@ public enum ButtonToggleType {
 		case RIGHT:
 			return RIGHT_CLICK_ON_CURSOR;
 		case SHIFT_LEFT:
-			return LEFT_CLICK_ON_CURSOR;
+			// shift clicking acts wonky, will maybe add support later
+			return null;
 		case SHIFT_RIGHT:
-			return RIGHT_CLICK_ON_CURSOR;
+			// shift clicking acts wonky, will maybe add support later
+			return null;
 		case UNKNOWN:
 			return null;
 		case WINDOW_BORDER_LEFT:

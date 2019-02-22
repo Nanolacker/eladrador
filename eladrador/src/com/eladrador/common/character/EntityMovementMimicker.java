@@ -1,9 +1,8 @@
-package com.eladrador.common.character.utils;
+package com.eladrador.common.character;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.scheduling.RepeatingTask;
 
 import net.minecraft.server.v1_13_R2.Entity;

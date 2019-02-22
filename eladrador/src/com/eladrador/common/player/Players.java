@@ -1,4 +1,4 @@
-package com.eladrador.common.utils;
+package com.eladrador.common.player;
 
 import java.util.Collection;
 

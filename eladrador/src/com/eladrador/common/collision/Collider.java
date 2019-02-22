@@ -137,7 +137,7 @@ public abstract class Collider {
 		this.zMax = zMax;
 		updateCenter();
 		updateDimensions();
-		assignFields();
+		init();
 	}
 
 	/**
@@ -183,14 +183,13 @@ public abstract class Collider {
 		}
 		this.lengthZ = lengthZ;
 		updateBounds();
-		assignFields();
+		init();
 	}
 
 	/**
-	 * Assigns certain fields of this collider. Eliminates redundancy in
-	 * constructors.
+	 * Eliminates redundancy in constructors.
 	 */
-	private void assignFields() {
+	private void init() {
 		active = false;
 		tags = new ArrayList<String>();
 		drawingEnabled = false;

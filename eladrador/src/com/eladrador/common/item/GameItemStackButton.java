@@ -3,7 +3,7 @@ package com.eladrador.common.item;
 import org.bukkit.entity.Player;
 
 import com.eladrador.common.Debug;
-import com.eladrador.common.ui.AbstractMenu;
+import com.eladrador.common.GPlugin;
 import com.eladrador.common.ui.Button;
 import com.eladrador.common.ui.ButtonAddress;
 import com.eladrador.common.ui.ButtonContainer;
@@ -11,19 +11,18 @@ import com.eladrador.common.ui.ButtonToggleEvent;
 import com.eladrador.common.ui.ButtonToggleType;
 import com.eladrador.common.ui.UIProfile;
 
-public class GameItemButton extends Button {
+public final class GameItemStackButton extends Button {
 
-	private GameItem item;
+	private GameItemStack itemStack;
 
-	public GameItemButton(GameItem item) {
-		super(item.displayName(), item.description(), item.getMaterial());
-		setImageSize(item.getCurrentSize());
-		this.item = item;
-		item.registerButton(this);
+	GameItemStackButton(GameItemStack itemStack) {
+		super(itemStack.getItem().displayName(), itemStack.getItem().description(), itemStack.getItem().getMaterial());
+		setImageSize(itemStack.getSize());
+		this.itemStack = itemStack;
 	}
 
-	public GameItem getItem() {
-		return item;
+	public GameItemStack getItemStack() {
+		return itemStack;
 	}
 
 	@Override
@@ -51,65 +50,80 @@ public class GameItemButton extends Button {
 		case RIGHT_CLICK_ON_CURSOR:
 			onRightClickOnCursor(profile, address);
 			break;
-		case TAP_Q_IN_HAND:
-			onTapQInHand();
+		case SHIFT_LEFT_CLICK_IN_MENU:
+			onSpeicalUse();
+			break;
+		case SHIFT_RIGHT_CLICK_IN_MENU:
+			onSpeicalUse();
+			break;
+		case TAP_Q_IN_MAIN_HAND:
+			onSpeicalUse();
 			break;
 		default:
 			break;
+
 		}
 	}
 
 	private void onLeftClickInHand() {
-		item.getOnLeftClickInHand().invoke();
+		itemStack.getItem().getOnLeftClickInHand().invoke();
 	}
 
 	private void onRightClickInHand() {
-		item.getOnRightClickInHand().invoke();
+		itemStack.getItem().getOnRightClickInHand().invoke();
 	}
 
 	private void onLeftClickInMenu(UIProfile profile, ButtonAddress address) {
 		ButtonContainer container = address.getContainer();
 		int index = address.getIndex();
 		container.setButton(index, null);
-		profile.setButtonOnCursor(GameItemButton.this);
+		profile.setButtonOnCursor(GameItemStackButton.this);
 	}
 
 	private void onRightClickInMenu(UIProfile profile, ButtonAddress address) {
 		ButtonContainer container = address.getContainer();
 		int index = address.getIndex();
-		int size = item.getCurrentSize();
+		int size = itemStack.getSize();
 		if (size == 1) {
 			container.setButton(index, null);
 			profile.setButtonOnCursor(this);
 		} else {
-			int amountToTakeOff = (int) Math.ceil(item.getCurrentSize() / 2.0);
-			GameItem itemOnCursor = item.split(amountToTakeOff);
-			profile.setButtonOnCursor(new GameItemButton(itemOnCursor));
+			int amountToTakeOff = (int) Math.ceil(itemStack.getSize() / 2.0);
+			GameItemStack itemStackOnCursor = itemStack.split(amountToTakeOff);
+			profile.setButtonOnCursor(itemStackOnCursor.getButton());
 		}
 	}
 
 	private void onLeftClickOnCursor(UIProfile profile, ButtonAddress address) {
-		boolean discard = address == null;
+		Debug.log(address.getContainer() == null ? "WOOT BOI" : address.getContainer().getSize());
+		if (address.getIndex() == -1) {
+			return;
+		}
+		boolean discard = address.getIndex() == -999;
 		if (discard) {
 			profile.setButtonOnCursor(null);
-			DiscardButtonConfirmMenu confirm = new DiscardButtonConfirmMenu(this, false, profile.getOpenUpperMenu());
-			profile.openMenu(confirm);
+			DiscardGameItemStackConfirmMenu discardConfirmMenu = new DiscardGameItemStackConfirmMenu(this,
+					profile.getOpenUpperMenu());
+			profile.openMenu(discardConfirmMenu);
 		} else {
 			ButtonContainer container = address.getContainer();
 			int index = address.getIndex();
-
+			boolean canBePlacedDown = itemStack.getItem().canBePlacedDown(index);
+			if (!canBePlacedDown) {
+				return;
+			}
 			Button clickedButton = container.getButton(index);
-			if (clickedButton instanceof GameItemButton) {
-				GameItem clickedItem = ((GameItemButton) clickedButton).getItem();
-				if (item.isStackableWith(clickedItem)) {
+			if (clickedButton instanceof GameItemStackButton) {
+				GameItemStack clickedItemStack = ((GameItemStackButton) clickedButton).getItemStack();
+				if (itemStack.isStackableWith(clickedItemStack)) {
 					// stack
-					item.stack(clickedItem);
+					itemStack.stack(clickedItemStack);
 				} else {
 					// swap
 					profile.setButtonOnCursor(clickedButton);
 					container.setButton(index, this);
 				}
-			} else {
+			} else if (clickedButton == null) {
 				profile.setButtonOnCursor(null);
 				container.setButton(index, this);
 			}
@@ -119,16 +133,21 @@ public class GameItemButton extends Button {
 	private void onRightClickOnCursor(UIProfile profile, ButtonAddress address) {
 		ButtonContainer container = address.getContainer();
 		int index = address.getIndex();
+		boolean canBePlacedDown = itemStack.getItem().canBePlacedDown(index);
+		if (!canBePlacedDown) {
+			return;
+		}
 
 		Button clickedButton = container.getButton(index);
 		if (clickedButton == null) {
-			container.setButton(index, new GameItemButton(item.split(1)));
+			GameItemStack split = itemStack.split(1);
+			container.setButton(index, split.getButton());
 		} else {
-			if (clickedButton instanceof GameItemButton) {
-				GameItem clickedItem = ((GameItemButton) clickedButton).getItem();
-				if (clickedItem.isStackableWith(this.item)) {
+			if (clickedButton instanceof GameItemStackButton) {
+				GameItemStack clickedItemStack = ((GameItemStackButton) clickedButton).getItemStack();
+				if (clickedItemStack.isStackableWith(this.itemStack)) {
 					// stack
-					this.item.stack(clickedItem, 1);
+					this.itemStack.stack(clickedItemStack, 1);
 				} else {
 					// swap
 					profile.setButtonOnCursor(clickedButton);
@@ -138,8 +157,8 @@ public class GameItemButton extends Button {
 		}
 	}
 
-	private void onTapQInHand() {
-		item.getOnSpecialUse().invoke();
+	private void onSpeicalUse() {
+		itemStack.getItem().getOnSpecialUse().invoke();
 	}
 
 }

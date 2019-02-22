@@ -10,12 +10,12 @@ import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
+import com.eladrador.common.character.CharacterEntityMovementSynchronizer;
+import com.eladrador.common.character.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
 import com.eladrador.common.collision.Collider;
-import com.eladrador.common.item.GameItem;
+import com.eladrador.common.item.GameItemStack;
 import com.eladrador.common.item.PlayerInventory;
 import com.eladrador.common.quest.persistence.QuestState;
-import com.eladrador.common.utils.CharacterEntityMovementSynchronizer;
-import com.eladrador.common.utils.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
 import com.eladrador.common.zone.Zone;
 
 public class PlayerCharacter extends AbstractCharacter {
@@ -152,8 +152,8 @@ public class PlayerCharacter extends AbstractCharacter {
 		return inventory;
 	}
 
-	public GameItem getItemInHand() {
-		return inventory.getItem(0);
+	public GameItemStack getItemStackInHand() {
+		return inventory.getItemStack(0);
 	}
 
 	@Override

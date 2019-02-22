@@ -21,8 +21,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
 import com.eladrador.common.Debug;
-import com.eladrador.common.item.DiscardButtonConfirmMenu;
+import com.eladrador.common.item.DiscardGameItemStackConfirmMenu;
+import com.eladrador.common.item.GameItemStackButton;
 import com.eladrador.common.scheduling.DelayedTask;
+import com.eladrador.common.utils.MathUtils;
 
 /**
  * A listener that handles events pertaining to UI, such as clicking on buttons.
@@ -36,6 +38,7 @@ public final class UIListener implements Listener {
 	private void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		UIProfile.createNewProfile(player);
+		player.setCanPickupItems(false);
 	}
 
 	/*
@@ -73,8 +76,9 @@ public final class UIListener implements Listener {
 			topMenu.onClose(player);
 		}
 		Button cursorButton = profile.getButtonOnCursor();
-		if (cursorButton != null) {
-			UpperMenu discardConfirmMenu = new DiscardButtonConfirmMenu(cursorButton, true, null);
+		if (cursorButton instanceof GameItemStackButton) {
+			UpperMenu discardConfirmMenu = new DiscardGameItemStackConfirmMenu((GameItemStackButton) cursorButton,
+					null);
 			profile.setButtonOnCursor(null);
 			profile.openMenu(discardConfirmMenu);
 		} else {
@@ -95,13 +99,12 @@ public final class UIListener implements Listener {
 		if (profile == null) {
 			return;
 		}
+		event.setCancelled(true);
+
 		ClickType clickType = event.getClick();
-		if (clickType == ClickType.NUMBER_KEY) {
-			// does not permit the use of number keys in an inventory view
-			event.setCancelled(true);
-			return;
-		}
+
 		Inventory inventory = event.getClickedInventory();
+		int clickedSlot = event.getSlot();
 		Button cursorButton = profile.getButtonOnCursor();
 		boolean isButtonOnCursor = cursorButton != null;
 		Button toggledButton = null;
@@ -110,25 +113,36 @@ public final class UIListener implements Listener {
 		}
 		ButtonAddress addressClicked;
 		if (inventory == null) {
-			addressClicked = null;
+			// clickedSlot will be -1 or -999
+			addressClicked = new ButtonAddress(null, clickedSlot);
 		} else {
-			AbstractMenu menu = inventory.getType() == InventoryType.PLAYER ? profile.getLowerMenu()
-					: profile.getOpenUpperMenu();
-			int buttonIndex = event.getSlot();
-			addressClicked = new ButtonAddress(menu, buttonIndex);
+			InventoryType invType = inventory.getType();
+			if (invType == InventoryType.CRAFTING) {
+				return;
+			}
+			AbstractMenu menu = invType == InventoryType.PLAYER ? profile.getLowerMenu() : profile.getOpenUpperMenu();
+			if (menu == null) {
+				// this happens when the player clicks on an inventory on top that is not
+				// associated with any upper menu
+				return;
+			}
+			addressClicked = new ButtonAddress(menu, clickedSlot);
 			if (!isButtonOnCursor) {
-				toggledButton = menu.getButton(buttonIndex);
+				toggledButton = menu.getButton(clickedSlot);
 			}
 		}
 		if (toggledButton != null) {
-			event.setCancelled(true);
 			// so the final keyword can be added for use in an anonymous inner class
 			final Button finalButton = toggledButton;
 			ButtonToggleType toggleType = isButtonOnCursor ? ButtonToggleType.forClickTypeOnCursor(clickType)
 					: ButtonToggleType.forClickTypeInMenu(clickType);
+			if (toggleType == null) {
+				// if the click type is not supported
+				return;
+			}
 			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, addressClicked, event);
 			// must be delayed so that the event can fully cancel
-			new DelayedTask(0.0) {
+			new DelayedTask() {
 
 				@Override
 				public void run() {
@@ -146,8 +160,14 @@ public final class UIListener implements Listener {
 		if (profile == null) {
 			return;
 		}
+		event.setCancelled(true);
+
 		Set<Integer> rawSlots = event.getRawSlots();
 		int rawButtonIndex = rawSlots.toArray(new Integer[rawSlots.size()])[0];
+		boolean isCraftingSlot = MathUtils.checkInInterval(rawButtonIndex, 1, true, 4, true);
+		if (isCraftingSlot) {
+			return;
+		}
 		// InventoryDragEvent.getInventory() always returns the top inventory, so we
 		// must compare the slots to find out which inventory the player truly clicked
 		Inventory inventory = rawButtonIndex < 54 ? event.getInventory() : player.getInventory();
@@ -171,8 +191,12 @@ public final class UIListener implements Listener {
 				button = menu.getButton(buttonIndex);
 			}
 		}
+		if (menu == null) {
+			// this happens when the player clicks on an inventory on top that is not
+			// associated with any upper menu
+			return;
+		}
 		if (button != null) {
-			event.setCancelled(true);
 			// so the final keyword can be added for use in an anonymous inner class
 			final Button finalButton = button;
 			DragType dragType = event.getType();
@@ -191,33 +215,42 @@ public final class UIListener implements Listener {
 	}
 
 	/*
-	 * When a player activates a Button on their hotbar by clicking their mouse.
+	 * When a player activates the button in their hand by clicking their mouse.
 	 */
 	@EventHandler
-	private void onButtonHotbarClick(PlayerInteractEvent event) {
+	private void onInHandClick(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		UIProfile profile = UIProfile.forPlayer(player);
 		if (profile == null) {
 			return;
 		}
+		event.setCancelled(true);
+
+		Action action = event.getAction();
+		ButtonToggleType toggleType = ButtonToggleType.forAction(action);
+		if (toggleType == null) {
+			// if the action is not supported
+			return;
+		}
+
 		LowerMenu invMenu = profile.getLowerMenu();
 		// 0 is the index of the item in the hand
 		Button button = invMenu.getButton(0);
-		if (button != null) {
-			Action action = event.getAction();
-			ButtonToggleType toggleType = ButtonToggleType.forAction(action);
-			ButtonAddress address = new ButtonAddress(invMenu, 0);
-			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, address, event);
-			button.onToggle(toggleEvent);
+		if (button == null) {
+			return;
 		}
+
+		ButtonAddress address = new ButtonAddress(invMenu, 0);
+		ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, address, event);
+		button.onToggle(toggleEvent);
 	}
 
 	/*
-	 * When a player activates a Button on their hotbar by scrolling to it or
-	 * tapping the associated number key.
+	 * When a player toggles a Button on their hotbar by scrolling to it or tapping
+	 * the associated number key.
 	 */
 	@EventHandler
-	private void onButtonHotbarActivate(PlayerItemHeldEvent event) {
+	private void onButtonHotbarToggle(PlayerItemHeldEvent event) {
 		Player player = event.getPlayer();
 		UIProfile profile = UIProfile.forPlayer(player);
 		if (profile == null) {
@@ -228,8 +261,7 @@ public final class UIListener implements Listener {
 		Button button = invMenu.getButton(slot);
 		if (button != null) {
 			ButtonAddress address = new ButtonAddress(profile.getLowerMenu(), slot);
-			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, ButtonToggleType.RIGHT_CLICK_IN_HAND, address,
-					event);
+			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, ButtonToggleType.HOTBAR, address, event);
 			button.onToggle(toggleEvent);
 		}
 		// resets the Player's held item to the main slot
@@ -244,12 +276,13 @@ public final class UIListener implements Listener {
 			return;
 		}
 		event.setCancelled(true);
-		LowerMenu menu = profile.getLowerMenu();
-		// 0 because selection is locked to first slot
-		Button button = menu.getButton(0);
+
+		ButtonContainer container = profile.getLowerMenu();
+		int slot = 0;
+		Button button = container.getButton(slot);
 		if (button != null) {
-			ButtonToggleType toggleType = ButtonToggleType.TAP_Q_IN_HAND;
-			ButtonAddress address = new ButtonAddress(menu, 0);
+			ButtonToggleType toggleType = ButtonToggleType.TAP_Q_IN_MAIN_HAND;
+			ButtonAddress address = new ButtonAddress(container, slot);
 			ButtonToggleEvent toggleEvent = new ButtonToggleEvent(player, toggleType, address, event);
 			button.onToggle(toggleEvent);
 		}

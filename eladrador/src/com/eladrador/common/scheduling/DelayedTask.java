@@ -12,6 +12,13 @@ public abstract class DelayedTask extends AbstractTask {
 
 	private double delay;
 
+	/**
+	 * The delay will be initialized as {@code 0.0).
+	 */
+	public DelayedTask() {
+		this(0.0);
+	}
+
 	public DelayedTask(double delay) {
 		this.delay = delay;
 	}

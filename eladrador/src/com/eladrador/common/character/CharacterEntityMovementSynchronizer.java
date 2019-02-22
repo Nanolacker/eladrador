@@ -1,8 +1,7 @@
-package com.eladrador.common.utils;
+package com.eladrador.common.character;
 
 import org.bukkit.entity.Entity;
 
-import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.scheduling.RepeatingTask;
 
 /**

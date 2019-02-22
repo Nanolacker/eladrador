@@ -1,4 +1,4 @@
-package com.eladrador.common.utils;
+package com.eladrador.common.character;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +9,6 @@ import org.bukkit.entity.Entity;
 
 import com.eladrador.common.AbstractGameManager;
 import com.eladrador.common.GPlugin;
-import com.eladrador.common.character.AbstractCharacter;
 
 /**
  * Contains a number of utilities pertaining to characters.

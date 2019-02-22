@@ -1,7 +1,6 @@
 package com.eladrador.common.ui;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 /**
  * Represents a menu whose image occupies the lower part of an inventory view

@@ -1,37 +1,37 @@
 package com.eladrador.common.item;
 
-import com.eladrador.common.ui.AbstractMenu;
 import com.eladrador.common.ui.Button;
+import com.eladrador.common.ui.ButtonContainer;
 
 public class GameInventory {
 
-	private AbstractMenu menu;
+	private ButtonContainer buttonContainer;
 
-	public GameInventory(AbstractMenu menu) {
-		this.menu = menu;
+	public GameInventory(ButtonContainer buttonContainer) {
+		this.buttonContainer = buttonContainer;
 	}
 
-	public GameItem getItem(int index) {
+	public GameItemStack getItemStack(int index) {
 		validateIndex(index);
-		Button button = menu.getButton(index);
-		if (button instanceof GameItemButton) {
-			return ((GameItemButton) button).getItem();
+		Button button = buttonContainer.getButton(index);
+		if (button instanceof GameItemStackButton) {
+			return ((GameItemStackButton) button).getItemStack();
 		}
 		return null;
 	}
 
-	public void addItem(GameItem item) {
+	public void addItemStack(GameItem itemStack) {
 		// do this
 	}
 
-	public void setItem(int index, GameItem item) {
+	public void setItem(int index, GameItemStack itemStack) {
 		validateIndex(index);
-		GameItemButton button = new GameItemButton(item);
-		menu.setButton(index, button);
+		GameItemStackButton button = itemStack.getButton();
+		buttonContainer.setButton(index, button);
 	}
 
 	private void validateIndex(int index) {
-		int size = menu.getSize();
+		int size = buttonContainer.getSize();
 		if (index < 0) {
 			throw new IndexOutOfBoundsException("Index (" + index + ") negative");
 		} else if (index >= size) {

@@ -1,13 +1,10 @@
 package com.eladrador.common.item;
 
 import java.util.ArrayList;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
-import com.eladrador.common.Debug;
 import com.eladrador.common.event.Event;
-import com.eladrador.common.ui.Button;
 import com.eladrador.common.utils.StrUtils;
 
 public final class GameItem {
@@ -17,26 +14,24 @@ public final class GameItem {
 	private Material material;
 	private GameItemQuality quality;
 	private String flavorText;
-	private int currentSize;
-	private int maxSize;
+	private int maxStackSize;
 	private Event onLeftClickInHand;
 	private Event onRightClickInHand;
 	private Event onSpecialUse;
-	private ArrayList<Button> buttons;
+	private ArrayList<GameItemStack> itemStacks;
 
 	public GameItem(String name, GameItemType type, Material material, GameItemQuality quality, String flavorText,
-			int currentSize, int maxSize) {
+			int maxStackSize) {
 		this.name = name;
 		this.type = type;
 		this.material = material;
 		this.quality = quality;
 		this.flavorText = flavorText;
-		this.currentSize = currentSize;
-		this.maxSize = maxSize;
+		this.maxStackSize = maxStackSize;
 		onLeftClickInHand = new Event();
 		onRightClickInHand = new Event();
 		onSpecialUse = new Event();
-		buttons = new ArrayList<Button>();
+		itemStacks = new ArrayList<GameItemStack>();
 	}
 
 	public String getName() {
@@ -49,7 +44,7 @@ public final class GameItem {
 
 	public void setFlavorText(String text) {
 		flavorText = text;
-		updateButtons();
+		updateItemStackButtons();
 	}
 
 	public GameItemType getType() {
@@ -62,25 +57,15 @@ public final class GameItem {
 
 	public void setMaterial(Material material) {
 		this.material = material;
-		updateButtons();
+		updateItemStackButtons();
 	}
 
-	public int getCurrentSize() {
-		return currentSize;
+	public GameItemQuality getQuality() {
+		return quality;
 	}
 
-	public void setCurrentSize(int currentSize) {
-		validateCurrentSize(currentSize);
-		if (currentSize == 0) {
-			delete();
-		} else {
-			this.currentSize = currentSize;
-			updateButtons();
-		}
-	}
-
-	public int getMaxSize() {
-		return maxSize;
+	public int getMaxStackSize() {
+		return maxStackSize;
 	}
 
 	public Event getOnLeftClickInHand() {
@@ -104,86 +89,60 @@ public final class GameItem {
 		return onSpecialUse;
 	}
 
-	/**
-	 * Splits this item, returning a new item that was split from the original. The
-	 * current size of this item is also reduced by the specified amount.
-	 * 
-	 * @param amountToTakeOff the size of the returned item
-	 * @return the new item
-	 */
-	public GameItem split(int amountToTakeOff) {
-		setCurrentSize(currentSize - amountToTakeOff);
-		return new GameItem(name, type, material, quality, flavorText, amountToTakeOff, maxSize);
-	}
-
-	public void stack(GameItem onto) {
-		if (!onto.isStackableWith(onto)) {
-			throw new IllegalArgumentException("Item is not stackable");
-		}
-		stack(onto, currentSize);
-	}
-
-	public void stack(GameItem onto, int howMuch) {
-		if (!onto.isStackableWith(onto)) {
-			throw new IllegalArgumentException("Item is not stackable");
-		}
-		int ontoCurrentSize = onto.currentSize;
-		onto.setCurrentSize(ontoCurrentSize + howMuch);
-		this.setCurrentSize(currentSize - howMuch);
-	}
-
-	/**
-	 * Whether this item can be stacked with the other specified item. This method
-	 * does not take into account sizes and can still return true if this item's
-	 * size is maxed.
-	 * 
-	 * @param other the other item
-	 * @return true if the items can be stacked
-	 */
-	public boolean isStackableWith(GameItem other) {
-		return name.equals(other.name) && type == other.type && material == other.material && quality == other.quality
-				&& flavorText.equals(other.flavorText) && maxSize == other.maxSize;
-	}
-
 	public String displayName() {
 		return quality.getColor() + name;
 	}
 
 	public ArrayList<String> description() {
 		ArrayList<String> description = new ArrayList<String>();
-		description.add(ChatColor.WHITE + quality.toString());
+		description.add(ChatColor.RESET + type.toString());
+		description.add(quality.getColor() + quality.toString());
 		description.add("");
 		description.addAll(StrUtils.lineToParagraph(ChatColor.WHITE + flavorText));
 		return description;
 	}
 
-	void registerButton(GameItemButton button) {
-		buttons.add(button);
+	void registerItemStack(GameItemStack itemStack) {
+		itemStacks.add(itemStack);
 	}
 
-	void unregisterButton(GameItemButton button) {
-		buttons.remove(button);
+	void unregisterItemStack(GameItemStack itemStack) {
+		itemStacks.remove(itemStack);
 	}
 
-	private void updateButtons() {
-		for (Button button : buttons) {
-			button.setDisplayName(displayName());
-			button.setDescription(description());
-			button.setImageMaterial(material);
-			button.setImageSize(currentSize);
+	private void updateItemStackButtons() {
+		for (GameItemStack itemStack : itemStacks) {
+			itemStack.updateButton();
 		}
 	}
 
-	private void validateCurrentSize(int currentSize) {
-		if (currentSize > maxSize) {
-			throw new IllegalArgumentException(
-					"Specified size (" + currentSize + ") exceeds max size (" + maxSize + ")");
-		}
-	}
+	/**
+	 * Returns whether this item can be placed on the specified slot in an
+	 * inventory.
+	 */
+	public boolean canBePlacedDown(int inventorySlot) {
+		// 0: main hand
+		// 40: off hand
 
-	private void delete() {
-		for (Button button : buttons) {
-			button.delete();
+		// 36: feet
+		// 37: legs
+		// 38: chest
+		// 39: head
+		switch (inventorySlot) {
+		case 0:
+			return type.canBeInMainHand();
+		case 40:
+			return type.canBeUsedInOffHand();
+		case 36:
+			return type == GameItemType.ARMOR_FEET;
+		case 37:
+			return type == GameItemType.ARMOR_LEGS;
+		case 38:
+			return type == GameItemType.ARMOR_CHEST;
+		case 39:
+			return type == GameItemType.ARMOR_HEAD;
+		default:
+			return true;
 		}
 	}
 

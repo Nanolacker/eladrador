@@ -6,8 +6,8 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 import org.bukkit.util.Vector;
 
+import com.eladrador.common.player.Players;
 import com.eladrador.common.scheduling.RepeatingTask;
-import com.eladrador.common.utils.Players;
 import com.eladrador.common.utils.StrUtils;
 
 import net.minecraft.server.v1_13_R2.EntityArmorStand;

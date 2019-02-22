@@ -1,6 +1,8 @@
 package com.eladrador.common.ui;
 
 import java.util.HashMap;
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -8,6 +10,8 @@ import org.bukkit.inventory.Inventory;
  * A bridge between players and the custom UI.
  */
 public class UIProfile {
+
+	public static final int OFF_HAND_SLOT = 40;
 
 	/**
 	 * Keeps track of player-UI data.
@@ -23,13 +27,12 @@ public class UIProfile {
 	 * inventory.
 	 */
 	private final LowerMenu lowerMenu;
+	private final Cursor cursor;
 	/**
 	 * The {@link UpperMenu} that is currently open. {@code null} if there is none
 	 * open.
 	 */
 	private UpperMenu openUpperMenu;
-	private Cursor cursor;
-	private OffHand offHand;
 	/**
 	 * Whether the player associated with this {@code UIProfile} has a menu open, be
 	 * it lower or upper.
@@ -45,7 +48,6 @@ public class UIProfile {
 		lowerMenu = new LowerMenu(player);
 		openUpperMenu = null;
 		cursor = new Cursor(player);
-		offHand = new OffHand(player);
 		menuIsOpen = false;
 	}
 
@@ -87,15 +89,16 @@ public class UIProfile {
 	}
 
 	/**
-	 * Opens a {@link UpperMenu} for the player of this profile.
+	 * Opens a the menu view for the player of this profile.
 	 * 
-	 * @param menu the menu to be opened
+	 * @param upperMenu the menu on top
 	 */
-	public void openMenu(UpperMenu menu) {
-		closeMenus();
-		Inventory image = menu.getImage();
-		player.openInventory(image);
-		openUpperMenu = menu;
+	public void openMenu(UpperMenu upperMenu) {
+		closeMenu();
+		Inventory placeholder = Bukkit.createInventory(null, 9);
+		Inventory topImage = upperMenu == null ? placeholder : upperMenu.getImage();
+		player.openInventory(topImage);
+		openUpperMenu = upperMenu;
 		menuIsOpen = true;
 	}
 
@@ -103,7 +106,7 @@ public class UIProfile {
 	 * Closes any menus that the player represented by this profile has open, if
 	 * any.
 	 */
-	public void closeMenus() {
+	public void closeMenu() {
 		if (menuIsOpen) {
 			player.closeInventory();
 		}
@@ -130,11 +133,11 @@ public class UIProfile {
 	 * this profile.
 	 */
 	public Button getOffHandButton() {
-		return offHand.getButton(0);
+		return lowerMenu.getButton(OFF_HAND_SLOT);
 	}
 
 	public void setOffHandButton(Button button) {
-		offHand.setButton(0, button);
+		lowerMenu.setButton(OFF_HAND_SLOT, button);
 	}
 
 	/**
