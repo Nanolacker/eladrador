@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.PlayerInventory;
 
 import com.eladrador.common.Debug;
 import com.eladrador.common.GPlugin;
@@ -13,8 +14,9 @@ import com.eladrador.common.character.CharacterCollider;
 import com.eladrador.common.character.CharacterEntityMovementSynchronizer;
 import com.eladrador.common.character.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
 import com.eladrador.common.collision.Collider;
-import com.eladrador.common.item.GameItemStack;
-import com.eladrador.common.item.PlayerInventory;
+import com.eladrador.common.item.EquipmentItem;
+import com.eladrador.common.item.GameItem;
+import com.eladrador.common.item.MainHandItem;
 import com.eladrador.common.quest.persistence.QuestState;
 import com.eladrador.common.zone.Zone;
 
@@ -31,11 +33,15 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	private HashMap<Integer, QuestState> questStateMap;
 	private Zone zone;
-	private PlayerInventory inventory;
 	private double xp;
 	private double maxMana;
 	private double currentMana;
 	private PlayerCharacterAttributes attributes;
+	private MainHandItem mainHand;
+	private EquipmentItem head;
+	private EquipmentItem chest;
+	private EquipmentItem legs;
+	private EquipmentItem feet;
 	/**
 	 * The hitbox of the player.
 	 */
@@ -44,14 +50,13 @@ public class PlayerCharacter extends AbstractCharacter {
 	private PlayerCharacter(Player bukkitPlayer, int saveSlot, PlayerBackground background, PlayerClass playerClass,
 			HashMap<Integer, QuestState> questStateMap, Zone zone, double xp, double maxHealth, double currentHealth,
 			double maxMana, double currentMana, PlayerCharacterAttributes attributes, Location location) {
-		super(bukkitPlayer.getName(), levelFromXP(xp), maxHealth, location);
+		super(bukkitPlayer.getName(), levelForXP(xp), maxHealth, location);
 		this.bukkitPlayer = bukkitPlayer;
 		this.saveSlot = saveSlot;
 		this.background = background;
 		this.playerClass = playerClass;
 		this.questStateMap = questStateMap;
 		this.zone = zone;
-		inventory = new PlayerInventory(this);
 		this.xp = xp;
 		this.currentHealth = currentHealth;
 		this.maxMana = maxMana;
@@ -84,7 +89,7 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	public static PlayerCharacter retrieve(Player bukkitPlayer, int saveSlot) {
 		PlayerCharacterSaveData data = PlayerCharacterPersistence.retrieveData(bukkitPlayer, saveSlot);
-		PlayerClass playerClass = PlayerClass.byID(data.playerClassID);
+		PlayerClass playerClass = PlayerClass.forName(data.playerClassID);
 		PlayerBackground background = PlayerBackground.byID(data.playerBackgroundID);
 		Zone zone = Zone.byID(data.zoneID);
 		World world = GPlugin.getGameManager().worldForName(data.worldName);
@@ -149,11 +154,7 @@ public class PlayerCharacter extends AbstractCharacter {
 	}
 
 	public PlayerInventory getInventory() {
-		return inventory;
-	}
-
-	public GameItemStack getItemStackInHand() {
-		return inventory.getItemStack(0);
+		return bukkitPlayer.getInventory();
 	}
 
 	@Override
@@ -185,7 +186,7 @@ public class PlayerCharacter extends AbstractCharacter {
 		zone.displayEntranceMessage(this);
 	}
 
-	public static int levelFromXP(double xp) {
+	public static int levelForXP(double xp) {
 
 		/*
 		 * RECALCULATE LATER
@@ -208,6 +209,76 @@ public class PlayerCharacter extends AbstractCharacter {
 
 	public PlayerCharacterAttributes getAttributes() {
 		return attributes;
+	}
+
+	public MainHandItem getMainHand() {
+		return mainHand;
+	}
+
+	public void setMainHand(MainHandItem mainHand) {
+		if (this.mainHand != null) {
+			this.mainHand.onUnequip(this);
+		}
+		this.mainHand = mainHand;
+		if (mainHand != null) {
+			mainHand.onEquip(this);
+		}
+	}
+
+	public EquipmentItem getHead() {
+		return head;
+	}
+
+	public void setHead(EquipmentItem head) {
+		if (this.head != null) {
+			this.head.onUnequip(this);
+		}
+		this.head = head;
+		if (head != null) {
+			head.onEquip(this);
+		}
+	}
+
+	public EquipmentItem getChest() {
+		return chest;
+	}
+
+	public void setChest(EquipmentItem chest) {
+		if (this.chest != null) {
+			this.chest.onUnequip(this);
+		}
+		this.chest = chest;
+		if (chest != null) {
+			chest.onEquip(this);
+		}
+	}
+
+	public EquipmentItem getLegs() {
+		return legs;
+	}
+
+	public void setLegs(EquipmentItem legs) {
+		if (this.legs != null) {
+			this.legs.onUnequip(this);
+		}
+		this.legs = legs;
+		if (legs != null) {
+			legs.onEquip(this);
+		}
+	}
+
+	public EquipmentItem getFeet() {
+		return feet;
+	}
+
+	public void setFeet(EquipmentItem feet) {
+		if (this.feet != null) {
+			this.feet.onUnequip(this);
+		}
+		this.feet = feet;
+		if (feet != null) {
+			feet.onEquip(this);
+		}
 	}
 
 	/**

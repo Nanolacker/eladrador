@@ -8,21 +8,41 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.BoundingBox;
 
-import com.eladrador.common.Debug;
-import com.eladrador.common.item.GameItem;
+import com.eladrador.common.character.AbstractCharacter;
+import com.eladrador.common.character.CharacterEffect;
 import com.eladrador.common.item.GameItemQuality;
-import com.eladrador.common.item.GameItemStack;
 import com.eladrador.common.item.GameItemType;
-import com.eladrador.common.item.PlayerInventory;
+import com.eladrador.common.item.MainHandItem;
 import com.eladrador.common.player.PlayerBackground;
 import com.eladrador.common.player.PlayerCharacter;
 import com.eladrador.common.player.PlayerClass;
 import com.eladrador.common.scheduling.DelayedTask;
+import com.eladrador.common.ui.InteractableItemRegistry;
 import com.eladrador.common.zone.Zone;
 
 public class MenuTestListener implements Listener {
+
+	public MenuTestListener() {
+		MainHandItem shoes = new MainHandItem("SWORD", "Sword", Material.DIAMOND_SWORD, GameItemType.SHORT_SWORD,
+				GameItemQuality.EPIC, "This sword is very powerful.");
+		CharacterEffect effect = new CharacterEffect() {
+
+			@Override
+			public void onRemove(AbstractCharacter character) {
+				((PlayerCharacter) character).sendMessage("Removed!");
+			}
+
+			@Override
+			public void onApply(AbstractCharacter character) {
+				((PlayerCharacter) character).sendMessage("Equipped!");
+			}
+		};
+		shoes.addOnEquipEffect(effect);
+		InteractableItemRegistry.register(shoes);
+	}
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
@@ -43,31 +63,11 @@ public class MenuTestListener implements Listener {
 				PlayerCharacter pc = PlayerCharacter.retrieve(player, 0);
 				pc.setBukkitPlayer(player);
 
-				GameItem item1 = new GameItem("Holy Boots of the North", GameItemType.ARMOR_FEET,
-						Material.DIAMOND_BOOTS, GameItemQuality.EPIC,
-						"These boots are very powerful, very holy, very epic.", 1);
-
-				GameItem item2 = new GameItem("Holy Breastplate of the East", GameItemType.ARMOR_HEAD,
-						Material.DIAMOND_CHESTPLATE, GameItemQuality.EPIC,
-						"This breastplate is very powerful, very holy, very epic.", 64);
-
-				GameItem item3 = new GameItem("Crap", GameItemType.CONSUMABLE, Material.COCOA_BEANS,
-						GameItemQuality.COMMON, "Ew", 64);
-				item3.getOnSpecialUse().addListener(new Runnable() {
-					public void run() {
-						Debug.log("crap");
-					}
-				});
+				MainHandItem sword = (MainHandItem) InteractableItemRegistry.forId("SWORD");
 
 				PlayerInventory inventory = pc.getInventory();
 
-				GameItemStack itemStack1 = new GameItemStack(item1, 1);
-				GameItemStack itemStack2 = new GameItemStack(item2, 1);
-				GameItemStack itemStack3 = new GameItemStack(item3, 64);
-
-				inventory.setItem(2, itemStack1);
-				inventory.setItem(3, itemStack2);
-				inventory.setItem(4, itemStack3);
+				inventory.setItem(2, sword.itemStack());
 			}
 
 		}.start();

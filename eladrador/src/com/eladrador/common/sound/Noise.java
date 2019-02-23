@@ -13,119 +13,59 @@ import org.bukkit.entity.Player;
 public class Noise {
 
 	private Sound type;
-	private Location source;
 	private float volume;
 	private float pitch;
-	private SoundCategory category;
+	private SoundCategory soundCategory;
 
-	/**
-	 * Constructs a new noise that is <b>only usable for playing to individual
-	 * player</b>. Invoking {@link Noise#play()} on this noise will result in an
-	 * {@link IllegalStateException} being thrown. Use {@link Noise#play(Player)}
-	 * instead.
-	 */
 	public Noise(Sound type) {
 		this.type = type;
-		source = null;
-		volume = 1;
-		pitch = 1;
-		category = null;
+		volume = 1.0f;
+		pitch = 1.0f;
+		// MASTER is the default in Bukkit
+		soundCategory = SoundCategory.MASTER;
 	}
 
-	public Noise(Sound type, Location source) {
-		this.type = type;
-		this.source = source;
-		volume = 1;
-		pitch = 1;
-		category = null;
+	public float getVolume() {
+		return volume;
 	}
 
-	/**
-	 * Only usable for playing to individual player.
-	 * 
-	 */
-	public Noise(Sound type, float volume, float pitch) {
-		this.type = type;
-		source = null;
+	public void setVolume(float volume) {
 		this.volume = volume;
+	}
+
+	public float getPitch() {
+		return pitch;
+	}
+
+	public void setPitch(float pitch) {
 		this.pitch = pitch;
-		category = null;
 	}
 
-	public Noise(Sound type, Location source, float volume, float pitch) {
-		this.type = type;
-		this.source = source;
-		this.volume = volume;
-		this.pitch = pitch;
-		category = null;
+	public SoundCategory getSoundCategory() {
+		return soundCategory;
 	}
 
-	/**
-	 * Only usable for playing to individual player.
-	 */
-	public Noise(Sound type, SoundCategory category) {
-		this.type = type;
-		source = null;
-		volume = 1;
-		pitch = 1;
-		this.category = category;
+	public void setSoundCategory(SoundCategory soundCategory) {
+		this.soundCategory = soundCategory;
 	}
 
-	public Noise(Sound type, Location source, SoundCategory category) {
-		this.type = type;
-		this.source = source;
-		volume = 1;
-		pitch = 1;
-		this.category = category;
-	}
-
-	/**
-	 * Only usable for playing to individual player.
-	 * 
-	 */
-	public Noise(Sound type, float volume, float pitch, SoundCategory category) {
-		this.type = type;
-		source = null;
-		this.volume = volume;
-		this.pitch = pitch;
-		this.category = category;
-	}
-
-	public Noise(Sound type, Location source, float volume, float pitch, SoundCategory category) {
-		this.type = type;
-		this.source = source;
-		this.volume = volume;
-		this.pitch = pitch;
-		this.category = category;
-	}
-
-	/**
-	 * Only usable if source is set.
-	 */
-	public void play() {
-		if (source == null) {
-			throw new IllegalStateException(
-					"Can only use play() when the source is set. Use play(Player) instead or use a different constructor to set source");
-		}
+	public void play(Location source) {
 		World world = source.getWorld();
-		if (category == null) {
-			world.playSound(source, type, volume, pitch);
-		} else {
-			world.playSound(source, type, category, volume, pitch);
-		}
+		world.playSound(source, type, soundCategory, volume, pitch);
 	}
 
 	/**
 	 * Plays to a specific player only.
-	 * 
-	 * @param p the player
 	 */
-	public void play(Player p) {
-		if (category == null) {
-			p.playSound(source == null ? p.getLocation() : source, type, volume, pitch);
-		} else {
-			p.playSound(source == null ? p.getLocation() : source, type, category, volume, pitch);
-		}
+	public void play(Player player) {
+		player.playSound(player.getLocation(), type, soundCategory, volume, pitch);
+	}
+
+	/**
+	 * Plays to a specific player only.
+	 */
+	public void play(Player player, Location source) {
+		player.playSound(source, type, soundCategory, volume, pitch);
 	}
 
 }

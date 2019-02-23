@@ -13,13 +13,17 @@ import org.bukkit.scheduler.BukkitScheduler;
 import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.GClock;
 import com.eladrador.common.scheduling.RepeatingTask;
+import com.eladrador.common.ui.ItemInteractionListener;
 import com.eladrador.common.ui.TextPanel;
-import com.eladrador.common.ui.UIListener;
 import com.eladrador.test.TestGameManager;
 
 public final class GPlugin extends JavaPlugin {
 
 	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = TestGameManager.class;
+	/**
+	 * In seconds.
+	 */
+	private static final double CHECK_FOR_UPDATE_PERIOD = 1.0;
 
 	private static Plugin plugin;
 	private static Server server;
@@ -27,17 +31,13 @@ public final class GPlugin extends JavaPlugin {
 	private static BukkitScheduler scheduler;
 	private static AbstractGameManager gameManager;
 
-	/**
-	 * All code from the plugin is run from here. Called when this Plugin is
-	 * enabled.
-	 */
 	@Override
 	public void onEnable() {
 		plugin = this;
 		server = getServer();
 		pluginManager = server.getPluginManager();
 		scheduler = server.getScheduler();
-		registerEvents(new UIListener());
+		registerEvents(new ItemInteractionListener());
 		try {
 			gameManager = GAME_MANAGER_CLASS.getConstructor().newInstance();
 		} catch (Exception e) {
@@ -48,9 +48,6 @@ public final class GPlugin extends JavaPlugin {
 		enableReloadOnExport();
 	}
 
-	/**
-	 * Called when this plugin is disabled.
-	 */
 	@Override
 	public void onDisable() {
 		TextPanel.removeAllTextPanelEntities();
@@ -76,14 +73,14 @@ public final class GPlugin extends JavaPlugin {
 	 */
 	private void enableReloadOnExport() {
 		long lastModified = getFile().lastModified();
-		RepeatingTask checkForUpdate = new RepeatingTask(2.0) {
+		RepeatingTask checkForUpdate = new RepeatingTask(CHECK_FOR_UPDATE_PERIOD) {
 
 			@Override
 			protected void run() {
 				if (getFile().lastModified() > lastModified) {
 					// delayed to prevent certain errors that result from reloading too quickly
 					// after exporting
-					DelayedTask reload = new DelayedTask(1.0) {
+					DelayedTask reload = new DelayedTask() {
 
 						@Override
 						protected void run() {

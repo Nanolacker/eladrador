@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 
 import com.eladrador.common.GPlugin;
 import com.eladrador.common.player.PlayerBackground;
@@ -24,6 +25,7 @@ import com.eladrador.common.player.PlayerClass;
 import com.eladrador.common.sound.Noise;
 import com.eladrador.common.ui.Button;
 import com.eladrador.common.ui.ButtonToggleEvent;
+import com.eladrador.common.ui.InteractableItemRegistry;
 import com.eladrador.common.ui.LowerMenu;
 import com.eladrador.common.ui.UIProfile;
 import com.eladrador.common.ui.UpperMenu;
@@ -50,24 +52,26 @@ public class PlayerCharacterManageListener implements Listener {
 	 * TEST STUFF
 	 */
 	World spawnWorld = GPlugin.getGameManager().worldForName("world");
-	Location startLoc = new Location(spawnWorld, 0, 70, 0);
+	Location startLoc = new Location(spawnWorld, 46.5, 69, 236.5);
 	Zone testZone = new Zone(spawnWorld, "Melcher", 1, ChatColor.GREEN, 1) {
 	};
 	PlayerBackground background = new PlayerBackground("Dustbell", 0, testZone, startLoc) {
 	};
-	PlayerClass playerClass = new PlayerClass("Warrior", 0, Material.IRON_AXE) {
+	PlayerClass playerClass = new PlayerClass("Warrior", Material.IRON_AXE) {
 	};
 
 	public PlayerCharacterManageListener() {
-		openPCSelectMenuButton = new Button(ChatColor.BLUE + "Select a Character", null, Material.EMERALD) {
+		InteractableItemRegistry.register(openPCSelectMenuButton);
+		InteractableItemRegistry.register(deletePCButton);
+		InteractableItemRegistry.register(cancelDeleteButton);
+
+		ItemStack openPCSelectButtonItemStack = new ItemStack(Material.EMERALD);
+		openPCSelectMenuButton = new Button(ChatColor.BLUE + "Select a Character", openPCSelectButtonItemStack) {
 
 			@Override
-			protected void onToggle(ButtonToggleEvent toggleEvent) {
-				Player player = toggleEvent.getPlayer();
-				UpperMenu pcSelectMenu = pcSelectMenu(player);
-				UIProfile uiProf = UIProfile.forPlayer(player);
-				uiProf.openMenu(pcSelectMenu);
+			public void onToggle(Player player) {
 				clickNoise.play(player);
+				// OPEN PC SELECT MENU
 			}
 
 		};
@@ -156,8 +160,8 @@ public class PlayerCharacterManageListener implements Listener {
 		if (pcCreated) {
 			PlayerCharacterSaveData data = PlayerCharacterPersistence.retrieveData(player, saveSlot);
 			PlayerBackground background = PlayerBackground.byID(data.playerBackgroundID);
-			int level = PlayerCharacter.levelFromXP(data.xp);
-			PlayerClass playerClass = PlayerClass.byID(data.playerClassID);
+			int level = PlayerCharacter.levelForXP(data.xp);
+			PlayerClass playerClass = PlayerClass.forName(data.playerClassID);
 			Zone zone = Zone.byID(data.zoneID);
 			pcDescription = new ArrayList<String>();
 			pcDescription.add(ChatColor.GREEN + background.getName());

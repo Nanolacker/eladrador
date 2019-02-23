@@ -1,119 +1,66 @@
 package com.eladrador.common.item;
 
 import java.util.ArrayList;
+import java.util.Set;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import com.eladrador.common.event.Event;
+import com.eladrador.common.Debug;
+import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.ui.InteractableItem;
 import com.eladrador.common.utils.StrUtils;
 
-public final class GameItem {
+public class GameItem extends InteractableItem {
 
 	private String name;
 	private GameItemType type;
-	private Material material;
 	private GameItemQuality quality;
-	private String flavorText;
-	private int maxStackSize;
-	private Event onLeftClickInHand;
-	private Event onRightClickInHand;
-	private Event onSpecialUse;
-	private ArrayList<GameItemStack> itemStacks;
 
-	public GameItem(String name, GameItemType type, Material material, GameItemQuality quality, String flavorText,
-			int maxStackSize) {
+	public GameItem(String id, String name, Material icon, GameItemType type, GameItemQuality quality,
+			String flavorText) {
+		super(id, itemStack(name, icon, type, quality, flavorText));
 		this.name = name;
 		this.type = type;
-		this.material = material;
 		this.quality = quality;
-		this.flavorText = flavorText;
-		this.maxStackSize = maxStackSize;
-		onLeftClickInHand = new Event();
-		onRightClickInHand = new Event();
-		onSpecialUse = new Event();
-		itemStacks = new ArrayList<GameItemStack>();
+	}
+
+	private static ItemStack itemStack(String name, Material icon, GameItemType type, GameItemQuality quality,
+			String flavorText) {
+		ItemStack itemStack = new ItemStack(icon);
+		ItemMeta itemMeta = itemStack.getItemMeta();
+		itemMeta.setDisplayName(quality.getColor() + name);
+
+		itemMeta.setUnbreakable(true);
+		itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
+
+		ArrayList<String> lore = new ArrayList<>();
+		lore.add(ChatColor.RESET + type.toString());
+		lore.add(quality.getColor() + quality.toString());
+		lore.add("");
+		lore.addAll(StrUtils.lineToParagraph(ChatColor.WHITE + flavorText));
+		itemMeta.setLore(lore);
+
+		itemStack.setItemMeta(itemMeta);
+		return itemStack;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public String getFlavorText() {
-		return flavorText;
-	}
-
-	public void setFlavorText(String text) {
-		flavorText = text;
-		updateItemStackButtons();
-	}
-
 	public GameItemType getType() {
 		return type;
 	}
 
-	public Material getMaterial() {
-		return material;
-	}
-
-	public void setMaterial(Material material) {
-		this.material = material;
-		updateItemStackButtons();
-	}
-
 	public GameItemQuality getQuality() {
 		return quality;
-	}
-
-	public int getMaxStackSize() {
-		return maxStackSize;
-	}
-
-	public Event getOnLeftClickInHand() {
-		if (!type.canBeInMainHand()) {
-			throw new IllegalStateException("This item (type " + type + ") cannot be held in the main hand.");
-		}
-		return onLeftClickInHand;
-	}
-
-	public Event getOnRightClickInHand() {
-		if (!type.canBeInMainHand()) {
-			throw new IllegalStateException("This item (type " + type + ") cannot be held in the main hand.");
-		}
-		return onRightClickInHand;
-	}
-
-	public Event getOnSpecialUse() {
-		if (!type.canHaveSpecialUse()) {
-			throw new IllegalStateException("This item (type " + type + ") cannot have a special use.");
-		}
-		return onSpecialUse;
-	}
-
-	public String displayName() {
-		return quality.getColor() + name;
-	}
-
-	public ArrayList<String> description() {
-		ArrayList<String> description = new ArrayList<String>();
-		description.add(ChatColor.RESET + type.toString());
-		description.add(quality.getColor() + quality.toString());
-		description.add("");
-		description.addAll(StrUtils.lineToParagraph(ChatColor.WHITE + flavorText));
-		return description;
-	}
-
-	void registerItemStack(GameItemStack itemStack) {
-		itemStacks.add(itemStack);
-	}
-
-	void unregisterItemStack(GameItemStack itemStack) {
-		itemStacks.remove(itemStack);
-	}
-
-	private void updateItemStackButtons() {
-		for (GameItemStack itemStack : itemStacks) {
-			itemStack.updateButton();
-		}
 	}
 
 	/**
@@ -143,6 +90,49 @@ public final class GameItem {
 			return type == GameItemType.ARMOR_HEAD;
 		default:
 			return true;
+		}
+	}
+
+	@Override
+	public void onClickInInventory(InventoryClickEvent event) {
+		Player player = (Player) event.getWhoClicked();
+		int slot = event.getSlot();
+		ItemStack cursor = event.getCursor();
+		if (slot == 0) {
+			if (cursor.getType() == Material.AIR) {
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				pc.setMainHand(null);
+			}
+		}
+	}
+
+	@Override
+	public void onClickOnCursor(InventoryClickEvent event) {
+		Player player = (Player) event.getWhoClicked();
+		int slot = event.getSlot();
+		if (slot == 0) {
+			if (!type.canBeInMainHand()) {
+				event.setCancelled(true);
+				player.sendMessage(ChatColor.RED + "That can't go there!");
+			} else {
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				pc.setMainHand((MainHandItem) this);
+			}
+		}
+	}
+
+	@Override
+	public void onDragOnCursor(InventoryDragEvent event) {
+		Player player = (Player) event.getWhoClicked();
+		Set<Integer> slots = event.getInventorySlots();
+		if (slots.contains(0)) {
+			if (!type.canBeInMainHand()) {
+				event.setCancelled(true);
+				player.sendMessage(ChatColor.RED + "That can't go there!");
+			} else {
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				pc.setMainHand((MainHandItem) this);
+			}
 		}
 	}
 

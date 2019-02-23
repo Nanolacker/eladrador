@@ -5,7 +5,6 @@ import org.bukkit.ChatColor;
 /**
  * Represents the rarity and value of an item. The color of the title of an
  * item's image is determined by this.
- * 
  */
 public enum GameItemQuality {
 	POOR(ChatColor.GRAY), COMMON(ChatColor.WHITE), UNCOMMON(ChatColor.GREEN), RARE(ChatColor.BLUE),
