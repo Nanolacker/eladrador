@@ -2,8 +2,8 @@ package com.eladrador.common.sound;
 
 public class SoundSequenceElement {
 
-	private Noise noise;
-	private double time;
+	private final Noise noise;
+	private final double time;
 
 	public SoundSequenceElement(Noise noise, double time) {
 		this.noise = noise;

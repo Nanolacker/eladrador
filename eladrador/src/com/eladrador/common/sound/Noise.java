@@ -2,7 +2,6 @@ package com.eladrador.common.sound;
 
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -10,62 +9,50 @@ import org.bukkit.entity.Player;
  * Represents a sound that can be played ambiently at a location or to a
  * specific player.
  */
-public class Noise {
+public final class Noise {
 
-	private Sound type;
-	private float volume;
-	private float pitch;
-	private SoundCategory soundCategory;
+	private final Sound type;
+	private final float volume;
+	private final float pitch;
 
+	/**
+	 * The volume and pitch of this noise will be set to 1.
+	 */
 	public Noise(Sound type) {
+		this(type, 1.0f, 1.0f);
+	}
+
+	public Noise(Sound type, float volume, float pitch) {
 		this.type = type;
-		volume = 1.0f;
-		pitch = 1.0f;
-		// MASTER is the default in Bukkit
-		soundCategory = SoundCategory.MASTER;
+		this.volume = volume;
+		this.pitch = pitch;
 	}
 
 	public float getVolume() {
 		return volume;
 	}
 
-	public void setVolume(float volume) {
-		this.volume = volume;
-	}
-
 	public float getPitch() {
 		return pitch;
 	}
 
-	public void setPitch(float pitch) {
-		this.pitch = pitch;
-	}
-
-	public SoundCategory getSoundCategory() {
-		return soundCategory;
-	}
-
-	public void setSoundCategory(SoundCategory soundCategory) {
-		this.soundCategory = soundCategory;
-	}
-
 	public void play(Location source) {
 		World world = source.getWorld();
-		world.playSound(source, type, soundCategory, volume, pitch);
+		world.playSound(source, type, volume, pitch);
 	}
 
 	/**
 	 * Plays to a specific player only.
 	 */
 	public void play(Player player) {
-		player.playSound(player.getLocation(), type, soundCategory, volume, pitch);
+		player.playSound(player.getLocation(), type, volume, pitch);
 	}
 
 	/**
 	 * Plays to a specific player only.
 	 */
 	public void play(Player player, Location source) {
-		player.playSound(source, type, soundCategory, volume, pitch);
+		player.playSound(source, type, volume, pitch);
 	}
 
 }

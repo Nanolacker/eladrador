@@ -10,12 +10,12 @@ import com.eladrador.common.scheduling.GClock;
 
 public class SoundSequencePlayer {
 
-	private SoundSequence soundSequence;
+	private final SoundSequence soundSequence;
 	private ArrayList<DelayedTask> playSoundTasks;
 	private boolean playing;
 	private boolean looping;
 	private double globalStartTime;
-	private double sequenceStartTime;
+	private double sequenceTime;
 
 	public SoundSequencePlayer(SoundSequence soundSequence) {
 		this.soundSequence = soundSequence;
@@ -23,7 +23,7 @@ public class SoundSequencePlayer {
 		playing = false;
 		looping = false;
 		globalStartTime = 0.0;
-		sequenceStartTime = 0.0;
+		sequenceTime = 0.0;
 	}
 
 	public boolean getPlaying() {
@@ -47,7 +47,7 @@ public class SoundSequencePlayer {
 	 * @return the amount of time in seconds through the sequence that has played
 	 */
 	public double getSequenceTime() {
-		return sequenceStartTime + (playing ? GClock.getTime() - globalStartTime : 0);
+		return sequenceTime + (playing ? GClock.getTime() - globalStartTime : 0);
 	}
 
 	public void play(Location source) {
@@ -72,9 +72,9 @@ public class SoundSequencePlayer {
 		for (int i = 0; i < elements.size(); i++) {
 			SoundSequenceElement element = elements.get(i);
 			double noiseTime = element.getTime();
-			if (noiseTime > sequenceStartTime) {
+			if (noiseTime > sequenceTime) {
 				Noise noise = element.getNoise();
-				DelayedTask playNoise = new DelayedTask(noiseTime - sequenceStartTime) {
+				DelayedTask playNoise = new DelayedTask(noiseTime - sequenceTime) {
 
 					@Override
 					protected void run() {
@@ -95,7 +95,7 @@ public class SoundSequencePlayer {
 			}
 		}
 		double duration = soundSequence.getDuration();
-		DelayedTask finish = new DelayedTask(duration - sequenceStartTime) {
+		DelayedTask finish = new DelayedTask(duration - sequenceTime) {
 
 			@Override
 			public void run() {
@@ -111,11 +111,50 @@ public class SoundSequencePlayer {
 	}
 
 	public void pause() {
-		playing = false;
+		if (!playing) {
+			throw new IllegalStateException("Cannot pause a sequence that is not playing");
+		} else {
+			playing = false;
+			sequenceTime += GClock.getTime() - globalStartTime;
+			for (int i = 0; i < playSoundTasks.size(); i++) {
+				DelayedTask playNoise = playSoundTasks.get(i);
+				if (playNoise.getActive()) {
+					double taskExeTime = playNoise.getExeTime();
+					if (taskExeTime >= GClock.getTime()) {
+						playNoise.stop();
+						for (int j = i + 1; j < playSoundTasks.size(); j++) {
+							DelayedTask followingTask = playSoundTasks.get(j);
+							followingTask.stop();
+						}
+						break;
+					}
+				}
+			}
+			playSoundTasks.clear();
+		}
 	}
 
 	public void stop() {
-		playing = false;
+		if (playing) {
+			playing = false;
+			sequenceTime = 0.0;
+			for (int i = 0; i < playSoundTasks.size(); i++) {
+				DelayedTask playNoise = playSoundTasks.get(i);
+				if (playNoise.getActive()) {
+					double taskExeTime = playNoise.getExeTime();
+					if (taskExeTime > GClock.getTime()) {
+						playNoise.stop();
+						for (int j = i + 1; j < playSoundTasks.size(); j++) {
+							DelayedTask followingTask = playSoundTasks.get(j);
+							followingTask.stop();
+						}
+						break;
+					}
+				}
+			}
+			playSoundTasks.clear();
+		} else {
+			throw new IllegalStateException("Cannot stop a sequence that is not playing");
+		}
 	}
-
 }
