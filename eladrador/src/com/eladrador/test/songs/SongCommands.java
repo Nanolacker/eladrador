@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.eladrador.common.sound.SoundSequence;
+import com.eladrador.common.sound.SoundSequencePlayer;
 
 public class SongCommands implements CommandExecutor {
 
@@ -18,18 +19,19 @@ public class SongCommands implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		Player p = (Player) sender;
+		SoundSequencePlayer soundPlayer = new SoundSequencePlayer(song);
 		if (label.equals("play")) {
-			song.play(p, true);
+			soundPlayer.play(p);
 		} else if (label.equals("pause")) {
-			song.pause();
+			soundPlayer.pause();
 		} else if (label.equals("stop")) {
-			song.stop();
+			soundPlayer.stop();
 		} else if (label.equals("sequencetime")) {
-			p.sendMessage(song.getSequenceTime() + "");
+			p.sendMessage(soundPlayer.getSequenceTime() + "");
 		} else if (label.equals("duration")) {
 			p.sendMessage(song.getDuration() + "");
 		} else if (label.equals("playing")) {
-			p.sendMessage(song.getPlaying() + "");
+			p.sendMessage(soundPlayer.getPlaying() + "");
 		}
 		return true;
 	}

@@ -8,8 +8,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import com.eladrador.common.collision.Collider;
-import com.eladrador.common.collision.Collider.ColliderDrawMode;
+import com.eladrador.common.physics.Collider;
+import com.eladrador.common.physics.Collider.ColliderDrawMode;
 import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.RepeatingTask;
 

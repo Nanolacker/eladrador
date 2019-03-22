@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.eladrador.common.Debug;
-import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacterOLD;
 import com.eladrador.common.ui.InteractableItem;
 import com.eladrador.common.utils.StrUtils;
 
@@ -100,7 +100,7 @@ public class GameItem extends InteractableItem {
 		ItemStack cursor = event.getCursor();
 		if (slot == 0) {
 			if (cursor.getType() == Material.AIR) {
-				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
 				pc.setMainHand(null);
 			}
 		}
@@ -115,7 +115,7 @@ public class GameItem extends InteractableItem {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "That can't go there!");
 			} else {
-				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
 				pc.setMainHand((MainHandItem) this);
 			}
 		}
@@ -130,7 +130,7 @@ public class GameItem extends InteractableItem {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "That can't go there!");
 			} else {
-				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
 				pc.setMainHand((MainHandItem) this);
 			}
 		}

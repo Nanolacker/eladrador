@@ -30,30 +30,30 @@ public class LostWoodsTestSong extends SoundSequence {
 		Noise highD = new Noise(instrument, 1, MusicNote.D_21.getPitch());
 		Noise highE = new Noise(instrument, 1, MusicNote.E_23.getPitch());
 
-		addNoise(lowF, 0);
-		addNoise(highA, 0.5 * noteTime);
-		addNoise(highB, 1 * noteTime);
+		addSound(0, lowF);
+		addSound(0.5 * noteTime, highA);
+		addSound(1 * noteTime, highB);
 
-		addNoise(lowF, 2 * noteTime);
-		addNoise(highA, 2.5 * noteTime);
-		addNoise(highB, 3 * noteTime);
+		addSound(2 * noteTime, lowF);
+		addSound(2.5 * noteTime, highA);
+		addSound(3 * noteTime, highB);
 
-		addNoise(lowF, 4 * noteTime);
-		addNoise(highA, 4.5 * noteTime);
-		addNoise(highB, 5 * noteTime);
-		addNoise(highE, 5.5 * noteTime);
-		addNoise(highD, 6 * noteTime);
-		addNoise(highB, 7 * noteTime);
-		addNoise(highC, 7.5 * noteTime);
+		addSound(4 * noteTime, lowF);
+		addSound(4.5 * noteTime, highA);
+		addSound(5 * noteTime, highB);
+		addSound(5.5 * noteTime, highE);
+		addSound(6 * noteTime, highD);
+		addSound(7 * noteTime, highB);
+		addSound(7.5 * noteTime, highC);
 
-		addNoise(highB, 8 * noteTime);
-		addNoise(highG, 8.5 * noteTime);
-		addNoise(lowE, 9 * noteTime);
+		addSound(8 * noteTime, highB);
+		addSound(8.5 * noteTime, highG);
+		addSound(9 * noteTime, lowE);
 
-		addNoise(lowD, 11.5 * noteTime);
-		addNoise(lowE, 12 * noteTime);
-		addNoise(highG, 12.5 * noteTime);
-		addNoise(lowE, 13 * noteTime);
+		addSound(11.5 * noteTime, lowD);
+		addSound(12 * noteTime, lowE);
+		addSound(12.5 * noteTime, highG);
+		addSound(13 * noteTime, lowE);
 
 	}
 

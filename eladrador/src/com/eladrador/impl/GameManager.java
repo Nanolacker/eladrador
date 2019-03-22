@@ -1,16 +1,14 @@
-package com.eladrador.core;
+package com.eladrador.impl;
 
 import com.eladrador.common.AbstractGameManager;
-import com.eladrador.common.GPlugin;
-import com.eladrador.core.playerCharacterManagement.PlayerCharacterManageListener;
+import com.eladrador.common.MMORPGPlugin;
 
 public class GameManager extends AbstractGameManager {
 
 	@Override
 	public void onEnable() {
 		registerWorld("world");
-		PlayerCharacterManageListener.instance = new PlayerCharacterManageListener();
-		GPlugin.registerEvents(PlayerCharacterManageListener.instance);
+		MMORPGPlugin.registerEvents(new PlayerCharacterManageListener());
 	}
 
 	@Override

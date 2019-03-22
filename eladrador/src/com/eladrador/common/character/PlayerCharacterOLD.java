@@ -1,28 +1,35 @@
-package com.eladrador.common.player;
+package com.eladrador.common.character;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang3.Validate;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
-
-import com.eladrador.common.Debug;
-import com.eladrador.common.GPlugin;
-import com.eladrador.common.character.AbstractCharacter;
-import com.eladrador.common.character.CharacterCollider;
-import com.eladrador.common.character.CharacterEntityMovementSynchronizer;
+import com.eladrador.common.MMORPGPlugin;
 import com.eladrador.common.character.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
-import com.eladrador.common.collision.Collider;
 import com.eladrador.common.item.EquipmentItem;
-import com.eladrador.common.item.GameItem;
 import com.eladrador.common.item.MainHandItem;
-import com.eladrador.common.quest.persistence.QuestState;
+import com.eladrador.common.physics.Collider;
+import com.eladrador.common.player.ActionBar;
+import com.eladrador.common.player.PlayerBackground;
+import com.eladrador.common.player.PlayerAttributes;
+import com.eladrador.common.player.PlayerCharacterListener;
+import com.eladrador.common.player.PlayerCharacterPersistence;
+import com.eladrador.common.player.PlayerCharacterSaveData;
+import com.eladrador.common.player.PlayerClass;
+import com.eladrador.common.quest.persistence.QuestStatus;
+import com.eladrador.common.utils.MathUtils;
 import com.eladrador.common.zone.Zone;
 
-public class PlayerCharacter extends AbstractCharacter {
+public class PlayerCharacterOLD extends AbstractCharacter {
 
-	private static final HashMap<Player, PlayerCharacter> playerCharacterMap = new HashMap<Player, PlayerCharacter>();
+	private static final HashMap<Player, PlayerCharacterOLD> playerCharacterMap = new HashMap<Player, PlayerCharacterOLD>();
+	private static final double[] XP_CHART = { 25, 50 };
+	private static final int MAX_LEVEL = XP_CHART.length + 1;
+	private static final double MAX_XP = sumXpChart();
 
 	private Player bukkitPlayer;
 	private int saveSlot;
@@ -31,25 +38,38 @@ public class PlayerCharacter extends AbstractCharacter {
 	/**
 	 * Keys are the quest IDs.
 	 */
-	private HashMap<Integer, QuestState> questStateMap;
+	private HashMap<Integer, QuestStatus> questStateMap;
 	private Zone zone;
 	private double xp;
 	private double maxMana;
 	private double currentMana;
-	private PlayerCharacterAttributes attributes;
+	private PlayerAttributes attributes;
 	private MainHandItem mainHand;
 	private EquipmentItem head;
 	private EquipmentItem chest;
 	private EquipmentItem legs;
 	private EquipmentItem feet;
-	/**
-	 * The hitbox of the player.
-	 */
 	private CharacterCollider hitbox;
+	private CharacterEntityMovementSynchronizer movementSyncer;
 
-	private PlayerCharacter(Player bukkitPlayer, int saveSlot, PlayerBackground background, PlayerClass playerClass,
-			HashMap<Integer, QuestState> questStateMap, Zone zone, double xp, double maxHealth, double currentHealth,
-			double maxMana, double currentMana, PlayerCharacterAttributes attributes, Location location) {
+	static {
+		MMORPGPlugin.registerEvents(new PlayerCharacterListener());
+	}
+
+	/**
+	 * Used to initialize {@link PlayerCharacterOLD#MAX_XP}.
+	 */
+	private static double sumXpChart() {
+		double sum = 0.0;
+		for (double xp : XP_CHART) {
+			sum += xp;
+		}
+		return sum;
+	}
+
+	private PlayerCharacterOLD(Player bukkitPlayer, int saveSlot, PlayerBackground background, PlayerClass playerClass,
+			HashMap<Integer, QuestStatus> questStateMap, Zone zone, double xp, double maxHealth, double currentHealth,
+			double maxMana, double currentMana, PlayerAttributes attributes, Location location) {
 		super(bukkitPlayer.getName(), levelForXP(xp), maxHealth, location);
 		this.bukkitPlayer = bukkitPlayer;
 		this.saveSlot = saveSlot;
@@ -62,7 +82,6 @@ public class PlayerCharacter extends AbstractCharacter {
 		this.maxMana = maxMana;
 		this.currentMana = currentMana;
 		this.attributes = attributes;
-		this.location = location;
 	}
 
 	/**
@@ -73,29 +92,41 @@ public class PlayerCharacter extends AbstractCharacter {
 		/*
 		 * RECALCULATE LATER
 		 */
-		int maxHealth = 1;
-		int maxMana = 1;
+		int maxHealth = 15;
+		int maxMana = 15;
 
-		PlayerCharacterSaveData data = new PlayerCharacterSaveData(bukkitPlayer.getName(), saveSlot, background.getID(),
-				playerClass.getID(), new HashMap<Integer, QuestState>(), background.getStartZone().getID(), 0,
-				maxHealth, maxHealth, maxMana, maxMana, new PlayerCharacterAttributes(), background.getStartLocation());
+		PlayerCharacterSaveData data = new PlayerCharacterSaveData(bukkitPlayer.getName(), saveSlot,
+				background.getName(), playerClass.getName(), new HashMap<Integer, QuestStatus>(),
+				background.getStartZone().getName(), 0, maxHealth, maxHealth, maxMana, maxMana,
+				new PlayerAttributes(), background.getStartLocation());
+
 		PlayerCharacterPersistence.storeData(data);
 	}
 
 	/**
 	 * Returns the stored {@code PlayerCharacter} that corresponds to the specified
-	 * {@code Player} and save slot. {@link PlayerCharacter#setBukkitPlayer(Player)}
+	 * {@code Player} and save slot. {@link PlayerCharacterOLD#setBukkitPlayer(Player)}
 	 * must be invoked on the returned {@code PlayerCharacter}.
 	 */
-	public static PlayerCharacter retrieve(Player bukkitPlayer, int saveSlot) {
+	public static PlayerCharacterOLD retrieve(Player bukkitPlayer, int saveSlot) {
 		PlayerCharacterSaveData data = PlayerCharacterPersistence.retrieveData(bukkitPlayer, saveSlot);
-		PlayerClass playerClass = PlayerClass.forName(data.playerClassID);
-		PlayerBackground background = PlayerBackground.byID(data.playerBackgroundID);
-		Zone zone = Zone.byID(data.zoneID);
-		World world = GPlugin.getGameManager().worldForName(data.worldName);
-		Location location = new Location(world, data.x, data.y, data.z, data.yaw, data.pitch);
-		return new PlayerCharacter(bukkitPlayer, data.saveSlot, background, playerClass, data.questStateMap, zone,
-				data.xp, data.maxHealth, data.currentHealth, data.maxMana, data.currentMana, data.attributes, location);
+		PlayerClass playerClass = PlayerClass.forName(data.getPlayerClassName());
+		PlayerBackground background = PlayerBackground.forName(data.getPlayerBackgroundName());
+		Zone zone = Zone.forName(data.getZoneName());
+		World world = MMORPGPlugin.getGameManager().worldForName(data.getWorldName());
+		Location location = new Location(world, data.getLocX(), data.getLocY(), data.getLocZ(), data.getYaw(),
+				data.getPitch());
+		return new PlayerCharacterOLD(bukkitPlayer, data.getSaveSlot(), background, playerClass, data.getQuestStateMap(),
+				zone, data.getXp(), data.getMaxHealth(), data.getCurrentHealth(), data.getMaxMana(),
+				data.getCurrentMana(), data.getAttributes(), location);
+	}
+
+	/**
+	 * Returns true if the specified Bukkit player is attached to a player
+	 * character.
+	 */
+	public static boolean bukkitPlayerIsAttachedToPlayerCharacter(Player bukkitPlayer) {
+		return playerCharacterMap.containsKey(bukkitPlayer);
 	}
 
 	/**
@@ -105,7 +136,7 @@ public class PlayerCharacter extends AbstractCharacter {
 	 * @param bukkitPlayer the {@code Player}
 	 * @return
 	 */
-	public static PlayerCharacter forBukkitPlayer(Player bukkitPlayer) {
+	public static PlayerCharacterOLD forBukkitPlayer(Player bukkitPlayer) {
 		return playerCharacterMap.get(bukkitPlayer);
 	}
 
@@ -126,15 +157,19 @@ public class PlayerCharacter extends AbstractCharacter {
 	 */
 	public void setBukkitPlayer(Player bukkitPlayer) {
 		this.bukkitPlayer = bukkitPlayer;
-		Debug.log(location.toString());
 		bukkitPlayer.teleport(location);
-		Location hitboxCenter = location.add(0, 1, 0);
-		CharacterEntityMovementSynchronizer syncer = new CharacterEntityMovementSynchronizer(this, bukkitPlayer,
+		Location hitboxCenter = location.clone().add(0, 1, 0);
+		movementSyncer = new CharacterEntityMovementSynchronizer(this, bukkitPlayer,
 				MovementSynchronizeMode.CHARACTER_FOLLOWS_ENTITY);
-		syncer.setEnabled(true);
+		movementSyncer.setEnabled(true);
 		playerCharacterMap.put(bukkitPlayer, this);
 		hitbox = new PlayerCharacterCollider(this, hitboxCenter);
 		hitbox.setActive(true);
+
+		updateHealthBar();
+		updateFoodBar();
+		updateActionBar();
+		updateXpBar();
 	}
 
 	public int getSaveSlot() {
@@ -149,7 +184,7 @@ public class PlayerCharacter extends AbstractCharacter {
 		return playerClass;
 	}
 
-	public HashMap<Integer, QuestState> getQuestStateMap() {
+	public HashMap<Integer, QuestStatus> getQuestStateMap() {
 		return questStateMap;
 	}
 
@@ -187,16 +222,73 @@ public class PlayerCharacter extends AbstractCharacter {
 	}
 
 	public static int levelForXP(double xp) {
-
-		/*
-		 * RECALCULATE LATER
-		 */
-		return 1;
-
+		int level = 0;
+		while (xp >= 0.0) {
+			if (level == MAX_LEVEL - 1) {
+				return MAX_LEVEL;
+			}
+			xp -= XP_CHART[level];
+			level++;
+		}
+		return level;
 	}
 
-	public double getXP() {
+	public double getXp() {
 		return xp;
+	}
+
+	public void addXp(double toAdd) {
+		Validate.isTrue(toAdd > 0.0, "Added xp must be positive");
+		xp = MathUtils.clamp(xp + toAdd, 0.0, MAX_XP);
+		int newLevel = levelForXP(xp);
+		for (int i = this.level; i < newLevel; i++) {
+			levelUp(newLevel);
+		}
+		this.level = newLevel;
+		updateActionBar();
+		updateXpBar();
+	}
+
+	private double getXpTowardNextLevel() {
+		double tempXp = xp;
+		for (int i = 0; i < level - 1; i++) {
+			tempXp -= XP_CHART[i];
+		}
+		return tempXp;
+	}
+
+	private double getXpRequiredThisLevel() {
+		if (level == MAX_LEVEL) {
+			return 0.0;
+		}
+		return XP_CHART[level - 1];
+	}
+
+	private void updateXpBar() {
+		double xpTowardNextLevel = getXpTowardNextLevel();
+		double xpRequiredThisLevel = getXpRequiredThisLevel();
+		float exp = xpRequiredThisLevel == 0.0 ? 0.0f : (float) (xpTowardNextLevel / xpRequiredThisLevel);
+		bukkitPlayer.setExp(exp);
+		bukkitPlayer.setLevel(level);
+	}
+
+	private void levelUp(int level) {
+		bukkitPlayer.sendTitle(ChatColor.GOLD + "Level Up!", "");
+	}
+
+	@Override
+	protected void setCurrentHealth(double currentHealth) {
+		if (currentHealth < 0.0) {
+			currentHealth = 0.0;
+		}
+		super.setCurrentHealth(currentHealth);
+		updateHealthBar();
+		updateActionBar();
+	}
+
+	private void updateHealthBar() {
+		double bukkitPlayerHealth = currentHealth / maxHealth * 20;
+		bukkitPlayer.setHealth(bukkitPlayerHealth);
 	}
 
 	public double getMaxMana() {
@@ -207,7 +299,21 @@ public class PlayerCharacter extends AbstractCharacter {
 		return currentMana;
 	}
 
-	public PlayerCharacterAttributes getAttributes() {
+	public void setCurrentMana(double currentMana) {
+		if (currentMana < 0.0) {
+			currentMana = 0.0;
+		}
+		this.currentMana = currentMana;
+		updateFoodBar();
+		updateActionBar();
+	}
+
+	private void updateFoodBar() {
+		int foodLevel = (int) (currentMana / maxMana * 20);
+		bukkitPlayer.setFoodLevel(foodLevel);
+	}
+
+	public PlayerAttributes getAttributes() {
 		return attributes;
 	}
 
@@ -285,16 +391,19 @@ public class PlayerCharacter extends AbstractCharacter {
 	 * Stores the specified {@code PlayerCharacter} to be retrieved later.
 	 */
 	public void saveData() {
-		hitbox.setActive(false);
-		PlayerCharacterSaveData data = new PlayerCharacterSaveData(name, saveSlot, background.getID(),
-				playerClass.getID(), questStateMap, zone.getID(), xp, maxHealth, currentHealth, maxMana, currentMana,
-				attributes, location);
+		PlayerCharacterSaveData data = new PlayerCharacterSaveData(name, saveSlot, background.getName(),
+				playerClass.getName(), questStateMap, zone.getName(), xp, maxHealth, currentHealth, maxMana,
+				currentMana, attributes, location);
 		PlayerCharacterPersistence.storeData(data);
+
+		playerCharacterMap.remove(bukkitPlayer);
+		hitbox.setActive(false);
+		movementSyncer.setEnabled(false);
 	}
 
 	private static final class PlayerCharacterCollider extends CharacterCollider {
 
-		private PlayerCharacterCollider(PlayerCharacter pc, Location center) {
+		private PlayerCharacterCollider(PlayerCharacterOLD pc, Location center) {
 			super(pc, center, 1.0, 2.0, 1.0);
 			setDrawingEnabled(true);
 		}

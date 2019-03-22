@@ -3,9 +3,12 @@ package com.eladrador.common.ui;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -28,6 +31,10 @@ public class ItemInteractionListener implements Listener {
 
 	@EventHandler
 	private void onItemClickInInventory(InventoryClickEvent event) {
+		if (event.getClick() == ClickType.NUMBER_KEY) {
+			event.setCancelled(true);
+			return;
+		}
 		ItemStack clickedItem = event.getCurrentItem();
 		InteractableItem interactable = InteractableItemRegistry.forItemStack(clickedItem);
 		if (interactable != null) {
@@ -50,6 +57,19 @@ public class ItemInteractionListener implements Listener {
 		InteractableItem interactable = InteractableItemRegistry.forItemStack(oldCursor);
 		if (interactable != null) {
 			interactable.onDragOnCursor(event);
+		}
+	}
+
+	@EventHandler
+	private void onItemClickInHand(PlayerInteractEvent event) {
+		Action action = event.getAction();
+		if (action == Action.PHYSICAL) {
+			return;
+		}
+		ItemStack inHand = event.getItem();
+		InteractableItem interactable = InteractableItemRegistry.forItemStack(inHand);
+		if (interactable != null) {
+			interactable.onClickInHand(event);
 		}
 	}
 

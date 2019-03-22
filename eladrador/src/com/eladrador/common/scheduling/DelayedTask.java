@@ -3,7 +3,7 @@ package com.eladrador.common.scheduling;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import com.eladrador.common.GPlugin;
+import com.eladrador.common.MMORPGPlugin;
 
 /**
  * A task that runs after a given amount of time has passed.
@@ -25,8 +25,8 @@ public abstract class DelayedTask extends AbstractTask {
 
 	@Override
 	protected void scheduleBukkitTask() {
-		BukkitScheduler scheduler = GPlugin.getScheduler();
-		Plugin plugin = GPlugin.getPlugin();
+		BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
+		Plugin plugin = MMORPGPlugin.getPlugin();
 		long delayInMilis = (long) (getDelay() * 20);
 		Runnable runnable = new Runnable() {
 

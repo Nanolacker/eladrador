@@ -56,13 +56,13 @@ public abstract class AbstractGameManager {
 
 	/**
 	 * Loads and registers a World to be used. Only register Worlds that are a part
-	 * of the actual story of the game (i.e. don't register lobby or main menu
+	 * of the actual story of the game here (i.e. don't register lobby or main menu
 	 * worlds). IMPORTANT: REGISTER ALL WORLDS BEFORE REGISTERING ANY ZONES.
 	 * 
 	 * @param worldName the name of the World being registered
 	 */
 	protected void registerWorld(String worldName) {
-		Server server = GPlugin.getBukkitServer();
+		Server server = MMORPGPlugin.getBukkitServer();
 		World world = server.createWorld(new WorldCreator(worldName));
 		worldMap.put(worldName, world);
 		zoneMap.put(world, new ArrayList<Zone>());

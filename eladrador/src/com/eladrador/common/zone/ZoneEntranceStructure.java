@@ -7,8 +7,8 @@ import org.bukkit.util.BoundingBox;
 
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
-import com.eladrador.common.collision.Collider;
-import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.physics.Collider;
 
 class ZoneEntranceStructure {
 

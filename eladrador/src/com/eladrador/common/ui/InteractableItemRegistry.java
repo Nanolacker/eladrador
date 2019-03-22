@@ -14,9 +14,6 @@ public class InteractableItemRegistry {
 
 	public static void register(InteractableItem interactableItem) {
 		String id = interactableItem.getId();
-		if (idMap.containsKey(id)) {
-			throw new IllegalArgumentException("Interactable item " + id + " is already registered");
-		}
 		ItemStack itemStack = interactableItem.itemStack();
 		idMap.put(id, interactableItem);
 		itemStackMap.put(itemStack, interactableItem);

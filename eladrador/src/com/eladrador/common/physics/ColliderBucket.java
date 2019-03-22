@@ -1,4 +1,4 @@
-package com.eladrador.common.collision;
+package com.eladrador.common.physics;
 
 import java.util.ArrayList;
 import java.util.HashMap;

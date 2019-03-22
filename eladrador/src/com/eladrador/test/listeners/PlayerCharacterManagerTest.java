@@ -6,7 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacterOLD;
 import com.eladrador.common.scheduling.DelayedTask;
 
 public class PlayerCharacterManagerTest implements Listener {
@@ -28,7 +28,7 @@ public class PlayerCharacterManagerTest implements Listener {
 	@EventHandler
 	private void onLeave(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
-		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(p);
+		PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(p);
 		pc.saveData();
 	}
 

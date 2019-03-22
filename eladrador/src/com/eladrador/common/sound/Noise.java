@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
  */
 public final class Noise {
 
-	private final Sound type;
+	private final Sound sound;
 	private final float volume;
 	private final float pitch;
 
@@ -23,9 +23,13 @@ public final class Noise {
 	}
 
 	public Noise(Sound type, float volume, float pitch) {
-		this.type = type;
+		this.sound = type;
 		this.volume = volume;
 		this.pitch = pitch;
+	}
+
+	public Sound getSound() {
+		return sound;
 	}
 
 	public float getVolume() {
@@ -38,21 +42,21 @@ public final class Noise {
 
 	public void play(Location source) {
 		World world = source.getWorld();
-		world.playSound(source, type, volume, pitch);
+		world.playSound(source, sound, volume, pitch);
 	}
 
 	/**
 	 * Plays to a specific player only.
 	 */
 	public void play(Player player) {
-		player.playSound(player.getLocation(), type, volume, pitch);
+		player.playSound(player.getLocation(), sound, volume, pitch);
 	}
 
 	/**
 	 * Plays to a specific player only.
 	 */
 	public void play(Player player, Location source) {
-		player.playSound(source, type, volume, pitch);
+		player.playSound(source, sound, volume, pitch);
 	}
 
 }

@@ -7,33 +7,32 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
-import com.eladrador.common.Debug;
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
-import com.eladrador.common.collision.Collider;
-import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.physics.Collider;
+
+import character.PlayerCharacter;
 
 /**
  * Represents an area of interest within game. Size can range from that of small
  * bandit camps to that of continents.
  */
-public abstract class Zone {
+public class Zone {
 
 	/**
 	 * Keys are the zone IDs.
 	 */
-	private static final HashMap<Integer, Zone> ZONE_MAP = new HashMap<Integer, Zone>();
+	private static final HashMap<String, Zone> ZONE_MAP = new HashMap<>();
 
 	private World world;
 	private String name;
-	private int id;
 	private ChatColor displayColor;
 	private int level;
 
-	protected Zone(World world, String name, int id, ChatColor displayColor, int level, BoundingBox... entranceBoxes) {
+	public Zone(World world, String name, ChatColor displayColor, int level, BoundingBox... entranceBoxes) {
 		this.world = world;
 		this.name = name;
-		this.id = id;
 		this.displayColor = displayColor;
 		this.level = level;
 		for (int i = 0; i < entranceBoxes.length; i++) {
@@ -41,17 +40,16 @@ public abstract class Zone {
 			ZoneEntranceCollider collider = new ZoneEntranceCollider(this, boundingBox);
 			collider.setActive(true);
 		}
-		ZONE_MAP.put(id, this);
+		ZONE_MAP.put(name, this);
 	}
 
-	public static Zone byID(int id) {
-		return ZONE_MAP.get(id);
+	public static Zone forName(String name) {
+		return ZONE_MAP.get(name);
 	}
 
-	public void displayEntranceMessage(PlayerCharacter pc) {
-		Player p = pc.getBukkitPlayer();
-		String msg = ChatColor.GOLD + "Lv. " + level + " " + displayColor + name;
-		p.sendMessage(msg);
+	public void displayEntranceMessage(PlayerCharacter playerCharacter) {
+		String message = ChatColor.GOLD + "Lv. " + level + " " + displayColor + name;
+		playerCharacter.sendMessage(message);
 	}
 
 	public World getWorld() {
@@ -62,10 +60,6 @@ public abstract class Zone {
 		return name;
 	}
 
-	public int getID() {
-		return id;
-	}
-	
 	public ChatColor getDisplayColor() {
 		return displayColor;
 	}
@@ -84,10 +78,10 @@ public abstract class Zone {
 		protected void onCollisionEnter(Collider other) {
 			if (other instanceof CharacterCollider) {
 				AbstractCharacter character = ((CharacterCollider) other).getCharacter();
-				if (character instanceof PlayerCharacter) {
-					Zone playerZone = ((PlayerCharacter) character).getZone();
+				if (character instanceof PlayerCharacterOLD) {
+					Zone playerZone = ((PlayerCharacterOLD) character).getZone();
 					if (playerZone != this.zone) {
-						((PlayerCharacter) character).setZone(zone);
+						((PlayerCharacterOLD) character).setZone(zone);
 					}
 				}
 			}

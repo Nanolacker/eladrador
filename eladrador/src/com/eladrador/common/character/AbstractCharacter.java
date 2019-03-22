@@ -6,7 +6,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import com.eladrador.common.GPlugin;
+import com.eladrador.common.MMORPGPlugin;
 import com.eladrador.common.ui.TextPanel;
 
 public abstract class AbstractCharacter implements Damager {
@@ -14,47 +14,47 @@ public abstract class AbstractCharacter implements Damager {
 	/**
 	 * Used to identify this {@code AbstractCharacter}.
 	 */
-	protected UUID id;
+	private UUID id;
 	/**
 	 * The name of this {@code AbstractCharacter}, including any {@code ChatColor}
 	 * components.
 	 */
-	protected String name;
+	private String name;
 	/**
 	 * A marker of difficulty.
 	 */
-	protected int level;
-	/**
-	 * The max health.
-	 */
-	protected double maxHealth;
+	private int level;
 	/**
 	 * The current health.
 	 */
-	protected double currentHealth;
+	private double currentHealth;
+	/**
+	 * The max health.
+	 */
+	private double maxHealth;
 	/**
 	 * The location of this {@code AbstractCharacter}.
 	 */
-	protected Location location;
+	private Location location;
 	/**
-	 * Whether this {@code AbstractCharacter} is spawned.
+	 * Whether this {@code AbstractCharacter} is alive.
 	 */
-	protected boolean spawned;
+	private boolean isAlive;
 	/**
 	 * {@code TextPanel} used to display name, level, and health.
 	 */
-	protected TextPanel nameplate;
+	private TextPanel nameplate;
 
 	protected AbstractCharacter(String name, int level, double maxHealth, Location location) {
 		id = UUID.randomUUID();
 		this.name = name;
 		this.level = level;
-		this.maxHealth = maxHealth;
 		currentHealth = maxHealth;
+		this.maxHealth = maxHealth;
 		this.location = location;
-		spawned = false;
+		isAlive = false;
 		nameplate = new TextPanel(22, location);
-		GPlugin.getGameManager().registerChara(this);
+		MMORPGPlugin.getGameManager().registerChara(this);
 	}
 
 	/**
@@ -80,12 +80,25 @@ public abstract class AbstractCharacter implements Damager {
 		return level;
 	}
 
-	public double getMaxHealth() {
-		return maxHealth;
-	}
-
 	public double getCurrentHealth() {
 		return currentHealth;
+	}
+
+	protected void setCurrentHealth(double currentHealth) {
+		if (currentHealth < 0.0) {
+			currentHealth = 0.0;
+		}
+		this.currentHealth = currentHealth;
+		updateNameplateText();
+	}
+
+	public void setMaxHealth(double maxHealth) {
+		this.maxHealth = maxHealth;
+		updateNameplateText();
+	}
+
+	public double getMaxHealth() {
+		return maxHealth;
 	}
 
 	/**
@@ -149,24 +162,23 @@ public abstract class AbstractCharacter implements Damager {
 	 */
 	@OverridingMethodsMustInvokeSuper
 	public void damage(double damage, Damager source) {
-		currentHealth -= damage;
-		if (currentHealth <= 0.0) {
+		double newHealth = currentHealth - damage;
+		setCurrentHealth(newHealth);
+		if (newHealth <= 0.0) {
 			die(source);
-		} else {
-			updateNameplateText();
 		}
 	}
 
 	@OverridingMethodsMustInvokeSuper
 	public void spawn() {
-		if (spawned) {
+		if (isAlive) {
 			throw new IllegalStateException("Cannot spawn a character that is already spawned.");
 		}
 		currentHealth = maxHealth;
 		updateNameplateLocation();
 		updateNameplateText();
 		nameplate.setVisible(true);
-		spawned = true;
+		isAlive = true;
 	}
 
 	/**
@@ -175,7 +187,7 @@ public abstract class AbstractCharacter implements Damager {
 	 */
 	@OverridingMethodsMustInvokeSuper
 	public void despawn() {
-		spawned = false;
+		isAlive = false;
 	}
 
 	/**
@@ -183,7 +195,7 @@ public abstract class AbstractCharacter implements Damager {
 	 */
 	@OverridingMethodsMustInvokeSuper
 	public void die(Damager killer) {
-		spawned = false;
+		isAlive = false;
 		currentHealth = 0.0;
 		nameplate.setVisible(false);
 	}

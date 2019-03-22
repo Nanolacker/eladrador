@@ -2,7 +2,7 @@ package com.eladrador.common.scheduling;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.eladrador.common.GPlugin;
+import com.eladrador.common.MMORPGPlugin;
 
 /**
  * Represents a task to be run.
@@ -25,7 +25,7 @@ public abstract class AbstractTask {
 		}
 		active = true;
 		double delay = this instanceof DelayedTask ? ((DelayedTask) this).getDelay() : 0;
-		exeTime = GClock.getTime() + delay;
+		exeTime = Clock.getTime() + delay;
 		scheduleBukkitTask();
 	}
 
@@ -35,7 +35,7 @@ public abstract class AbstractTask {
 		if (active) {
 			active = false;
 			exeTime = -1;
-			GPlugin.getScheduler().cancelTask(taskID);
+			MMORPGPlugin.getScheduler().cancelTask(taskID);
 		} else {
 			throw new IllegalStateException("Cannot cancel a task that is not active");
 		}
@@ -66,7 +66,7 @@ public abstract class AbstractTask {
 	 */
 	public double getSecondsUntilExecution() {
 		if (active) {
-			return exeTime - GClock.getTime();
+			return exeTime - Clock.getTime();
 		} else {
 			throw new IllegalStateException("Cannot get seconds until execution for a non-active task");
 		}

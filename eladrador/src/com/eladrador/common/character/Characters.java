@@ -8,7 +8,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 
 import com.eladrador.common.AbstractGameManager;
-import com.eladrador.common.GPlugin;
+import com.eladrador.common.MMORPGPlugin;
 
 /**
  * Contains a number of utilities pertaining to characters.
@@ -18,7 +18,7 @@ public final class Characters {
 	private static AbstractGameManager gameManager;
 
 	static {
-		gameManager = GPlugin.getGameManager();
+		gameManager = MMORPGPlugin.getGameManager();
 	}
 
 	private Characters() {

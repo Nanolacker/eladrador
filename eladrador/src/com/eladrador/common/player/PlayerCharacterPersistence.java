@@ -5,15 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-
-import com.eladrador.common.Debug;
-import com.eladrador.common.quest.persistence.QuestState;
-import com.google.common.io.Files;
 
 /**
  * This class will need to be heavily refactored in the future to support MySQL
@@ -22,7 +14,7 @@ import com.google.common.io.Files;
  */
 public final class PlayerCharacterPersistence {
 
-	private static final String SAVES_DIR_PATH = "C:\\Users\\conno\\Eladrador Server\\plugins\\player_character_saves";
+	private static final String PLAYER_SAVES_DIR_PATH = "C:\\Users\\conno\\Eladrador Server\\plugins\\player_character_saves";
 
 	private PlayerCharacterPersistence() {
 	}
@@ -43,9 +35,9 @@ public final class PlayerCharacterPersistence {
 	/**
 	 * Stores the specified {@code PlayerCharacter} to be retrieved later.
 	 */
-	static void storeData(PlayerCharacterSaveData data) {
+	public static void storeData(PlayerCharacterSaveData data) {
 		try {
-			File saveFile = getSaveFile(data.name, data.saveSlot);
+			File saveFile = getSaveFile(data.getPlayerName(), data.getSaveSlot());
 			saveFile.createNewFile();
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(saveFile));
 			out.writeObject(data);
@@ -70,7 +62,7 @@ public final class PlayerCharacterPersistence {
 	}
 
 	private static File getSaveFile(String playerName, int saveSlot) {
-		return new File(SAVES_DIR_PATH + "\\" + playerName + "_" + saveSlot);
+		return new File(PLAYER_SAVES_DIR_PATH + "\\" + playerName + "_" + saveSlot);
 	}
 
 }

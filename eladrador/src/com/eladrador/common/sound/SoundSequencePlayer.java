@@ -6,7 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import com.eladrador.common.scheduling.DelayedTask;
-import com.eladrador.common.scheduling.GClock;
+import com.eladrador.common.scheduling.Clock;
 
 public class SoundSequencePlayer {
 
@@ -47,7 +47,7 @@ public class SoundSequencePlayer {
 	 * @return the amount of time in seconds through the sequence that has played
 	 */
 	public double getSequenceTime() {
-		return sequenceTime + (playing ? GClock.getTime() - globalStartTime : 0);
+		return sequenceTime + (playing ? Clock.getTime() - globalStartTime : 0);
 	}
 
 	public void play(Location source) {
@@ -67,12 +67,12 @@ public class SoundSequencePlayer {
 			stop();
 		}
 		playing = true;
-		globalStartTime = GClock.getTime();
+		globalStartTime = Clock.getTime();
 		ArrayList<SoundSequenceElement> elements = soundSequence.getElements();
 		for (int i = 0; i < elements.size(); i++) {
 			SoundSequenceElement element = elements.get(i);
 			double noiseTime = element.getTime();
-			if (noiseTime > sequenceTime) {
+			if (noiseTime >= sequenceTime) {
 				Noise noise = element.getNoise();
 				DelayedTask playNoise = new DelayedTask(noiseTime - sequenceTime) {
 
@@ -115,12 +115,12 @@ public class SoundSequencePlayer {
 			throw new IllegalStateException("Cannot pause a sequence that is not playing");
 		} else {
 			playing = false;
-			sequenceTime += GClock.getTime() - globalStartTime;
+			sequenceTime += Clock.getTime() - globalStartTime;
 			for (int i = 0; i < playSoundTasks.size(); i++) {
 				DelayedTask playNoise = playSoundTasks.get(i);
 				if (playNoise.getActive()) {
 					double taskExeTime = playNoise.getExeTime();
-					if (taskExeTime >= GClock.getTime()) {
+					if (taskExeTime >= Clock.getTime()) {
 						playNoise.stop();
 						for (int j = i + 1; j < playSoundTasks.size(); j++) {
 							DelayedTask followingTask = playSoundTasks.get(j);
@@ -142,7 +142,7 @@ public class SoundSequencePlayer {
 				DelayedTask playNoise = playSoundTasks.get(i);
 				if (playNoise.getActive()) {
 					double taskExeTime = playNoise.getExeTime();
-					if (taskExeTime > GClock.getTime()) {
+					if (taskExeTime > Clock.getTime()) {
 						playNoise.stop();
 						for (int j = i + 1; j < playSoundTasks.size(); j++) {
 							DelayedTask followingTask = playSoundTasks.get(j);

@@ -7,8 +7,8 @@ import org.bukkit.Sound;
 
 import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.Damager;
-import com.eladrador.common.collision.Collider;
-import com.eladrador.common.collision.Collider.ColliderDrawMode;
+import com.eladrador.common.physics.Collider;
+import com.eladrador.common.physics.Collider.ColliderDrawMode;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.sound.Noise;
 
@@ -26,8 +26,8 @@ public class SimpleNPC extends AbstractCharacter implements Cloneable {
 			protected void onCollisionEnter(Collider other) {
 				damage(5, null);
 				setDrawParticle(Particle.DAMAGE_INDICATOR);
-				Noise painSound = new Noise(Sound.BLOCK_ANVIL_PLACE, location);
-				painSound.play();
+				Noise painSound = new Noise(Sound.BLOCK_ANVIL_PLACE);
+				painSound.play(location);
 			}
 
 			protected void onCollisionExit(Collider other) {
@@ -77,8 +77,8 @@ public class SimpleNPC extends AbstractCharacter implements Cloneable {
 		aabb.setActive(false);
 		aabb.setDrawingEnabled(false);
 		location.getWorld().createExplosion(location, 25);
-		//new SimpleNPC(location.clone().add(0, 0, 5)).spawn();
-		//spawn();
+		// new SimpleNPC(location.clone().add(0, 0, 5)).spawn();
+		// spawn();
 	}
 
 	@Override

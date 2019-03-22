@@ -2,10 +2,10 @@ package com.eladrador.common.quest;
 
 import java.util.HashMap;
 
-import com.eladrador.common.player.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacterOLD;
 import com.eladrador.common.quest.persistence.QuestObjectiveChainState;
 import com.eladrador.common.quest.persistence.QuestObjectiveState;
-import com.eladrador.common.quest.persistence.QuestState;
+import com.eladrador.common.quest.persistence.QuestStatus;
 
 public abstract class QuestObjective {
 
@@ -27,14 +27,14 @@ public abstract class QuestObjective {
 		return goal;
 	}
 
-	public int getStatusValueFor(PlayerCharacter pc) {
-		HashMap<Integer, QuestState> stateMap = pc.getQuestStateMap();
+	public int getStatusValueFor(PlayerCharacterOLD pc) {
+		HashMap<Integer, QuestStatus> stateMap = pc.getQuestStateMap();
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
 		if (!stateMap.containsKey(q)) {
 			return 0;
 		}
-		QuestState state = stateMap.get(q);
+		QuestStatus state = stateMap.get(q);
 		QuestPhase activePhase = state.getActivePhase();
 		int activePhaseIndex = activePhase.index;
 		int targetPhaseIndex = targetPhase.index;
@@ -49,14 +49,14 @@ public abstract class QuestObjective {
 		return objState.getStatusValue();
 	}
 
-	public void setStatusValueFor(PlayerCharacter pc, int val) {
-		HashMap<Integer, QuestState> stateMap = pc.getQuestStateMap();
+	public void setStatusValueFor(PlayerCharacterOLD pc, int val) {
+		HashMap<Integer, QuestStatus> stateMap = pc.getQuestStateMap();
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
 		if (!stateMap.containsKey(q)) {
 			throwInactiveObjectiveException();
 		} else {
-			QuestState state = stateMap.get(q);
+			QuestStatus state = stateMap.get(q);
 			QuestPhase activePhase = state.getActivePhase();
 			int activePhaseIndex = activePhase.index;
 			int targetPhaseIndex = targetPhase.index;
@@ -76,7 +76,7 @@ public abstract class QuestObjective {
 		throw new RuntimeException("This objective must be active for the player to set its status");
 	}
 
-	public boolean isFulfilled(PlayerCharacter pc) {
+	public boolean isFulfilled(PlayerCharacterOLD pc) {
 		return getStatusValueFor(pc) == goal;
 	}
 

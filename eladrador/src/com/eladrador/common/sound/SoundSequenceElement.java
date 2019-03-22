@@ -2,16 +2,12 @@ package com.eladrador.common.sound;
 
 public class SoundSequenceElement {
 
-	private final Noise noise;
 	private final double time;
+	private final Noise noise;
 
-	public SoundSequenceElement(Noise noise, double time) {
-		this.noise = noise;
+	public SoundSequenceElement(double time, Noise noise) {
 		this.time = time;
-	}
-
-	public Noise getNoise() {
-		return noise;
+		this.noise = noise;
 	}
 
 	/**
@@ -20,6 +16,10 @@ public class SoundSequenceElement {
 	 */
 	public double getTime() {
 		return time;
+	}
+
+	public Noise getNoise() {
+		return noise;
 	}
 
 }

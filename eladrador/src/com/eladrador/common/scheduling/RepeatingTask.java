@@ -3,7 +3,7 @@ package com.eladrador.common.scheduling;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import com.eladrador.common.GPlugin;
+import com.eladrador.common.MMORPGPlugin;
 
 /**
  * A task that runs repeatedly at a mutable period.
@@ -24,8 +24,8 @@ public abstract class RepeatingTask extends AbstractTask {
 
 	@Override
 	protected void scheduleBukkitTask() {
-		BukkitScheduler scheduler = GPlugin.getScheduler();
-		Plugin plugin = GPlugin.getPlugin();
+		BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
+		Plugin plugin = MMORPGPlugin.getPlugin();
 		long periodInMilis = (long) (period * 20);
 		Runnable runnable = new Runnable() {
 
@@ -54,9 +54,9 @@ public abstract class RepeatingTask extends AbstractTask {
 	public void setPeriod(double period) {
 		this.period = period;
 		if (active) {
-			BukkitScheduler scheduler = GPlugin.getScheduler();
+			BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
 			scheduler.cancelTask(taskID);
-			double serverTime = GClock.getTime();
+			double serverTime = Clock.getTime();
 			double executionTime = exeTime;
 			while (!(executionTime > serverTime)) {
 				executionTime += period;
@@ -71,7 +71,7 @@ public abstract class RepeatingTask extends AbstractTask {
 				}
 
 			};
-			taskID = scheduler.scheduleSyncRepeatingTask(GPlugin.getPlugin(), runnable, timeUntilExecutionInMilis,
+			taskID = scheduler.scheduleSyncRepeatingTask(MMORPGPlugin.getPlugin(), runnable, timeUntilExecutionInMilis,
 					periodInMilis);
 		}
 	}

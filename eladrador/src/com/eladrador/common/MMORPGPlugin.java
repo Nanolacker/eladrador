@@ -10,20 +10,19 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.scheduling.Clock;
 import com.eladrador.common.scheduling.DelayedTask;
-import com.eladrador.common.scheduling.GClock;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.ItemInteractionListener;
 import com.eladrador.common.ui.TextPanel;
-import com.eladrador.test.TestGameManager;
+import com.eladrador.impl.GameManager;
 
-public final class GPlugin extends JavaPlugin {
+public final class MMORPGPlugin extends JavaPlugin {
 
-	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = TestGameManager.class;
-	/**
-	 * In seconds.
-	 */
-	private static final double CHECK_FOR_UPDATE_PERIOD = 1.0;
+	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = GameManager.class;
+	private static final double CHECK_FOR_UPDATE_PERIOD_SECONDS = 1.0;
+	private static final double RESTART_DELAY_SECONDS = 1.0;
 
 	private static Plugin plugin;
 	private static Server server;
@@ -44,7 +43,7 @@ public final class GPlugin extends JavaPlugin {
 			e.printStackTrace();
 		}
 		gameManager.onEnable();
-		GClock.start();
+		Clock.start();
 		enableReloadOnExport();
 	}
 
@@ -73,26 +72,22 @@ public final class GPlugin extends JavaPlugin {
 	 */
 	private void enableReloadOnExport() {
 		long lastModified = getFile().lastModified();
-		RepeatingTask checkForUpdate = new RepeatingTask(CHECK_FOR_UPDATE_PERIOD) {
-
+		RepeatingTask checkForUpdate = new RepeatingTask(CHECK_FOR_UPDATE_PERIOD_SECONDS) {
 			@Override
 			protected void run() {
 				if (getFile().lastModified() > lastModified) {
 					// delayed to prevent certain errors that result from reloading too quickly
 					// after exporting
-					DelayedTask reload = new DelayedTask() {
-
+					DelayedTask reload = new DelayedTask(RESTART_DELAY_SECONDS) {
 						@Override
 						protected void run() {
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "reload");
 							stop();
 						}
-
 					};
 					reload.start();
 				}
 			}
-
 		};
 		checkForUpdate.start();
 	}

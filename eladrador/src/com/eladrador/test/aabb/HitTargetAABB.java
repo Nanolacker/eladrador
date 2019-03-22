@@ -3,7 +3,7 @@ package com.eladrador.test.aabb;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 
-import com.eladrador.common.collision.Collider;
+import com.eladrador.common.physics.Collider;
 
 public class HitTargetAABB extends Collider {
 

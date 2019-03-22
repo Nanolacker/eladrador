@@ -13,34 +13,28 @@ import com.eladrador.common.zone.Zone;
  * they have as a result.
  *
  */
-public abstract class PlayerBackground implements Listener {
+public class PlayerBackground implements Listener {
 
-	private static final HashMap<Integer, PlayerBackground> BACKGROUND_MAP = new HashMap<Integer, PlayerBackground>();
+	private static final HashMap<String, PlayerBackground> BACKGROUND_MAP = new HashMap<>();
 
 	private String name;
-	private int id;
 	private ChatColor displayColor;
 	private Zone startZone;
 	private Location startLoc;
 
-	protected PlayerBackground(String name, int id, Zone startZone, Location startLoc) {
+	public PlayerBackground(String name, Zone startZone, Location startLoc) {
 		this.name = name;
-		this.id = id;
 		this.startZone = startZone;
 		this.startLoc = startLoc;
-		BACKGROUND_MAP.put(id, this);
+		BACKGROUND_MAP.put(name, this);
 	}
 
-	public static PlayerBackground byID(int id) {
-		return BACKGROUND_MAP.get(id);
+	public static PlayerBackground forName(String name) {
+		return BACKGROUND_MAP.get(name);
 	}
 
 	public String getName() {
 		return name;
-	}
-
-	public int getID() {
-		return id;
 	}
 
 	public Zone getStartZone() {

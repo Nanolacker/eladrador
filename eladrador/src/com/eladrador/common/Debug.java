@@ -77,12 +77,12 @@ public final class Debug {
 
 				@Override
 				protected void run() {
-					GPlugin.getBukkitServer().broadcastMessage(debugMessage);
+					MMORPGPlugin.getBukkitServer().broadcastMessage(debugMessage);
 				}
 
 			}.start();
 		} else {
-			GPlugin.getBukkitServer().broadcastMessage(debugMessage);
+			MMORPGPlugin.getBukkitServer().broadcastMessage(debugMessage);
 		}
 	}
 
@@ -100,7 +100,7 @@ public final class Debug {
 	 * with.
 	 */
 	public static Player getFirstPlayerOnline() {
-		Player[] onlinePlayers = GPlugin.getBukkitServer().getOnlinePlayers().toArray(new Player[1]);
+		Player[] onlinePlayers = MMORPGPlugin.getBukkitServer().getOnlinePlayers().toArray(new Player[1]);
 		Player player = onlinePlayers[0];
 		return player;
 	}

@@ -3,7 +3,7 @@ package com.eladrador.common.scheduling;
 /**
  * Stores the time that has passed since the starting of the server.
  */
-public class GClock {
+public class Clock {
 
 	public static final double UPDATE_PERIOD = 0.05;
 

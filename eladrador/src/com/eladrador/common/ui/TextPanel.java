@@ -44,7 +44,7 @@ public class TextPanel {
 	 * Stores all {@code TextPanels} that are instantiated so that the entities
 	 * associated with them can be removed when the server is stopped.
 	 */
-	private static ArrayList<TextPanel> textPanels = new ArrayList<TextPanel>();
+	private static ArrayList<TextPanel> activeTextPanels = new ArrayList<>();
 
 	/**
 	 * Whether this {@code TextPanel} is visible and rendering text.
@@ -54,7 +54,7 @@ public class TextPanel {
 	 * The maximum number of characters that will be rendered on this
 	 * {@code TextPanel} per line before a new line is started.
 	 */
-	private int maxCharsPerLine;
+	private int charsPerLine;
 	/**
 	 * The text rendered by this {@code TextPanel}.
 	 */
@@ -88,15 +88,14 @@ public class TextPanel {
 	 * @param text     the text rendered by this {@code TextPanel}
 	 * @param location this {@code TextPanel}'s {@code Location}
 	 */
-	public TextPanel(String text, int maxCharsPerLine, Location location) {
+	public TextPanel(String text, Location location) {
 		visible = false;
-		this.maxCharsPerLine = maxCharsPerLine;
+		this.charsPerLine = StrUtils.IDEAL_CHARACTERS_PER_LINE;
 		setText(text);
 		this.location = location;
-		entities = new ArrayList<EntityArmorStand>();
+		entities = new ArrayList<>();
 		spawned = false;
 		initSpawnManageTask();
-		textPanels.add(this);
 	}
 
 	/**
@@ -106,15 +105,8 @@ public class TextPanel {
 	 * 
 	 * @param location this {@code TextPanel}'s {@code Location}
 	 */
-	public TextPanel(int maxCharsPerLine, Location location) {
-		visible = false;
-		this.maxCharsPerLine = maxCharsPerLine;
-		setText("");
-		this.location = location;
-		entities = new ArrayList<EntityArmorStand>();
-		spawned = false;
-		initSpawnManageTask();
-		textPanels.add(this);
+	public TextPanel(Location location) {
+		this("", location);
 	}
 
 	/**
@@ -124,8 +116,8 @@ public class TextPanel {
 	 * <b>Only to be invoked once during runtime, when the server is stopping.</b>
 	 */
 	public static void removeAllTextPanelEntities() {
-		for (int i = 0; i < textPanels.size(); i++) {
-			TextPanel textPanel = textPanels.get(i);
+		for (int i = 0; i < activeTextPanels.size(); i++) {
+			TextPanel textPanel = activeTextPanels.get(i);
 			textPanel.setVisible(false);
 		}
 	}
@@ -136,7 +128,6 @@ public class TextPanel {
 	 */
 	private void initSpawnManageTask() {
 		entitySpawnManageTask = new RepeatingTask(SPAWN_MANAGE_TASK_PERIOD) {
-
 			@Override
 			protected void run() {
 				boolean playerNearby = Players.playerNearby(location, MAX_SPAWN_DISTANCE_FROM_PLAYER,
@@ -163,7 +154,6 @@ public class TextPanel {
 					removeEntities();
 				}
 			}
-
 		};
 	}
 
@@ -184,8 +174,10 @@ public class TextPanel {
 		}
 		this.visible = visible;
 		if (visible) {
+			activeTextPanels.add(this);
 			entitySpawnManageTask.start();
 		} else {
+			activeTextPanels.remove(this);
 			removeEntities();
 			entitySpawnManageTask.stop();
 		}
@@ -203,7 +195,20 @@ public class TextPanel {
 	 */
 	public void setText(String text) {
 		this.text = text;
-		formattedText = StrUtils.lineToParagraph(text, maxCharsPerLine);
+		formattedText = StrUtils.lineToParagraph(text, charsPerLine);
+		if (visible) {
+			removeEntities();
+			spawnEntities();
+		}
+	}
+
+	public int getCharactersPerLine() {
+		return charsPerLine;
+	}
+
+	public void setCharactersPerLine(int charactersPerLine) {
+		charsPerLine = charactersPerLine;
+		formattedText = StrUtils.lineToParagraph(text, charsPerLine);
 		if (visible) {
 			removeEntities();
 			spawnEntities();

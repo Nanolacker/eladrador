@@ -3,8 +3,8 @@ package com.eladrador.common.quest;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.eladrador.common.player.PlayerCharacter;
-import com.eladrador.common.quest.persistence.QuestState;
+import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.quest.persistence.QuestStatus;
 
 public abstract class Quest {
 
@@ -47,12 +47,12 @@ public abstract class Quest {
 		phases.add(phase);
 	}
 
-	public QuestStatus getStatusFor(PlayerCharacter pc) {
-		HashMap<Integer, QuestState> questStateMap = pc.getQuestStateMap();
+	public QuestStatus getStatusFor(PlayerCharacterOLD pc) {
+		HashMap<Integer, QuestStatus> questStateMap = pc.getQuestStateMap();
 		if (!questStateMap.containsKey(id)) {
 			return QuestStatus.NOT_AVAILABLE;
 		}
-		QuestState state = questStateMap.get(this);
+		QuestStatus state = questStateMap.get(this);
 		QuestPhase activePhase = state.getActivePhase();
 		if (activePhase == null) {
 			return QuestStatus.COMPLETE;

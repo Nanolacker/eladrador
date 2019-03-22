@@ -6,13 +6,13 @@ import com.eladrador.common.quest.Quest;
 import com.eladrador.common.quest.QuestObjectiveChain;
 import com.eladrador.common.quest.QuestPhase;
 
-public class QuestState {
+public class QuestStatus {
 
 	private QuestPhase currentPhase;
 	private ArrayList<QuestObjectiveChainState> currentObjChainStates;
 
-	public QuestState(Quest q) {
-		currentPhase = q.getPhases().get(0);
+	public QuestStatus(Quest quest) {
+		currentPhase = quest.getPhases().get(0);
 		currentObjChainStates = new ArrayList<QuestObjectiveChainState>();
 		renewObjChainStates();
 	}

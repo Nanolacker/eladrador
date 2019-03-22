@@ -2,7 +2,7 @@ package com.eladrador.common.character;
 
 import org.bukkit.Location;
 
-import com.eladrador.common.collision.Collider;
+import com.eladrador.common.physics.Collider;
 
 public abstract class CharacterCollider extends Collider {
 

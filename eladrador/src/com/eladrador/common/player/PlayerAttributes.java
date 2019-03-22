@@ -3,7 +3,7 @@ package com.eladrador.common.player;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class PlayerCharacterAttributes implements Serializable {
+public class PlayerAttributes implements Serializable {
 
 	private static final long serialVersionUID = -8139934939139984475L;
 
@@ -13,7 +13,7 @@ public class PlayerCharacterAttributes implements Serializable {
 
 	private final HashMap<PlayerCharacterAttribute, Double> attributeMap;
 
-	PlayerCharacterAttributes() {
+	public PlayerAttributes() {
 		attributeMap = new HashMap<PlayerCharacterAttribute, Double>();
 	}
 
