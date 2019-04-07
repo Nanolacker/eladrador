@@ -5,59 +5,54 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 
-import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.character.NonPlayerCharacter;
 import com.eladrador.common.scheduling.Clock;
 import com.eladrador.common.scheduling.DelayedTask;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.ItemInteractionListener;
 import com.eladrador.common.ui.TextPanel;
-import com.eladrador.impl.GameManager;
 
-public final class MMORPGPlugin extends JavaPlugin {
+public abstract class MMORPGPlugin extends JavaPlugin {
 
-	private static final Class<? extends AbstractGameManager> GAME_MANAGER_CLASS = GameManager.class;
 	private static final double CHECK_FOR_UPDATE_PERIOD_SECONDS = 1.0;
 	private static final double RESTART_DELAY_SECONDS = 1.0;
 
-	private static Plugin plugin;
-	private static Server server;
-	private static PluginManager pluginManager;
-	private static BukkitScheduler scheduler;
-	private static AbstractGameManager gameManager;
+	private static MMORPGPlugin instance;
 
 	@Override
 	public void onEnable() {
-		plugin = this;
-		server = getServer();
-		pluginManager = server.getPluginManager();
-		scheduler = server.getScheduler();
+		instance = this;
 		registerEvents(new ItemInteractionListener());
-		try {
-			gameManager = GAME_MANAGER_CLASS.getConstructor().newInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		gameManager.onEnable();
 		Clock.start();
-		enableReloadOnExport();
+		onMMORPGStart();
+		enableReloadOnProjectExport();
 	}
 
 	@Override
 	public void onDisable() {
+		onMMORPGStop();
+		NonPlayerCharacter.despawnAll();
 		TextPanel.removeAllTextPanelEntities();
-		gameManager.onDisable();
 		// kickAllOnlinePlayers();
 	}
+
+	/**
+	 * Handle implementation-specific startup code here.
+	 */
+	protected abstract void onMMORPGStart();
+
+	/**
+	 * Handle implementation-specific shutdown code here.
+	 */
+	protected abstract void onMMORPGStop();
 
 	/**
 	 * Invoke when disabling.
 	 */
 	private void kickAllOnlinePlayers() {
+		Server server = getServer();
 		OfflinePlayer[] players = server.getOfflinePlayers();
 		for (int i = 0; i < players.length; i++) {
 			OfflinePlayer player = players[i];
@@ -70,7 +65,7 @@ public final class MMORPGPlugin extends JavaPlugin {
 	/**
 	 * Reloads the server when project is exported for ease of development.
 	 */
-	private void enableReloadOnExport() {
+	private void enableReloadOnProjectExport() {
 		long lastModified = getFile().lastModified();
 		RepeatingTask checkForUpdate = new RepeatingTask(CHECK_FOR_UPDATE_PERIOD_SECONDS) {
 			@Override
@@ -92,28 +87,15 @@ public final class MMORPGPlugin extends JavaPlugin {
 		checkForUpdate.start();
 	}
 
-	public static Plugin getPlugin() {
-		return plugin;
+	public static MMORPGPlugin getInstance() {
+		return instance;
 	}
 
-	public static Server getBukkitServer() {
-		return server;
-	}
-
-	public static PluginManager getPluginManager() {
-		return pluginManager;
-	}
-
-	public static BukkitScheduler getScheduler() {
-		return scheduler;
-	}
-
-	public static AbstractGameManager getGameManager() {
-		return gameManager;
-	}
-
+	/**
+	 * Convenience method for registering events.
+	 */
 	public static void registerEvents(Listener listener) {
-		pluginManager.registerEvents(listener, plugin);
+		Bukkit.getPluginManager().registerEvents(listener, instance);
 	}
 
 }

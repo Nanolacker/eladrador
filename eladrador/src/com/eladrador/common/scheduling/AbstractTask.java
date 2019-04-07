@@ -1,8 +1,6 @@
 package com.eladrador.common.scheduling;
 
-import org.bukkit.scheduler.BukkitRunnable;
-
-import com.eladrador.common.MMORPGPlugin;
+import org.bukkit.Bukkit;
 
 /**
  * Represents a task to be run.
@@ -14,7 +12,6 @@ public abstract class AbstractTask {
 	protected double exeTime;
 
 	protected AbstractTask() {
-		BukkitRunnable b = null;
 		active = false;
 		exeTime = -1;
 	}
@@ -35,7 +32,7 @@ public abstract class AbstractTask {
 		if (active) {
 			active = false;
 			exeTime = -1;
-			MMORPGPlugin.getScheduler().cancelTask(taskID);
+			Bukkit.getScheduler().cancelTask(taskID);
 		} else {
 			throw new IllegalStateException("Cannot cancel a task that is not active");
 		}

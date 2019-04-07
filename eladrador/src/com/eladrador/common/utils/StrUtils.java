@@ -4,8 +4,6 @@ import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 
-import com.eladrador.common.Debug;
-
 public final class StrUtils {
 
 	/**

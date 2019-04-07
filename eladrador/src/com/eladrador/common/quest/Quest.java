@@ -3,7 +3,7 @@ package com.eladrador.common.quest;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.quest.persistence.QuestStatus;
 
 public abstract class Quest {
@@ -13,14 +13,12 @@ public abstract class Quest {
 	 */
 	private static final HashMap<Integer, Quest> QUEST_MAP = new HashMap<Integer, Quest>();
 
-	private String name;
-	private int id;
+	private final String name;
 	private ArrayList<QuestPhase> phases;
-	private int minLvl;
+	private final int minLvl;
 
 	protected Quest(String name, int id, int minLvl) {
 		this.name = name;
-		this.id = id;
 		this.minLvl = minLvl;
 		phases = new ArrayList<QuestPhase>();
 		QUEST_MAP.put(id, this);
@@ -47,20 +45,19 @@ public abstract class Quest {
 		phases.add(phase);
 	}
 
-	public QuestStatus getStatusFor(PlayerCharacterOLD pc) {
-		HashMap<Integer, QuestStatus> questStateMap = pc.getQuestStateMap();
-		if (!questStateMap.containsKey(id)) {
-			return QuestStatus.NOT_AVAILABLE;
+	public QuestStatusType getStatusType(PlayerCharacter pc) {
+		QuestStatus status = pc.getQuestStatus(this);
+		if (status == null) {
+			return QuestStatusType.NOT_AVAILABLE;
 		}
-		QuestStatus state = questStateMap.get(this);
-		QuestPhase activePhase = state.getActivePhase();
+		QuestPhase activePhase = status.getActivePhase();
 		if (activePhase == null) {
-			return QuestStatus.COMPLETE;
+			return QuestStatusType.COMPLETE;
 		}
 		if (activePhase.index == 0) {
-			return QuestStatus.NOT_STARTED;
+			return QuestStatusType.NOT_STARTED;
 		}
-		return QuestStatus.ACTIVE;
+		return QuestStatusType.ACTIVE;
 	}
 
 }

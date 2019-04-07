@@ -19,22 +19,21 @@ import com.eladrador.common.utils.MathUtils;
 public abstract class Collider {
 
 	/**
-	 * The particle used to draw collideres.
+	 * The particle used to draw colliders.
 	 */
 	private static final Particle DEFAULT_DRAW_PARTICLE = Particle.CRIT;
 	/**
-	 * The period by which collider will be drawn.
+	 * The period by which colliders will be drawn.
 	 */
 	private static final double DRAW_PERIOD = 0.1;
 	/**
-	 * How thick layers of particles used to draw collideres will be. The greater
-	 * this value, the less space there is between particles used to draw
-	 * collideres.
+	 * How thick layers of particles used to draw colliders will be. The greater
+	 * this value, the less space there is between particles used to draw colliders.
 	 */
 	private static final double DRAW_THICKNESS = 4.0;
 
 	/**
-	 * Whether this collider will collide and respond to other collideres.
+	 * Whether this collider will collide and respond to other colliders.
 	 */
 	private boolean active;
 	/**
@@ -83,12 +82,12 @@ public abstract class Collider {
 	 */
 	private ArrayList<ColliderBucket> occupiedBuckets;
 	/**
-	 * The collideres that this collider is currently colliding with.
+	 * The colliders that this collider is currently colliding with.
 	 */
 	private ArrayList<Collider> collidingColliders;
 
 	/**
-	 * Represents a type of pattern by which collideres can be drawn.
+	 * Represents a type of pattern by which colliders can be drawn.
 	 */
 	public static enum ColliderDrawMode {
 		/**
@@ -196,24 +195,28 @@ public abstract class Collider {
 		drawMode = ColliderDrawMode.WIREFRAME;
 		drawParticle = DEFAULT_DRAW_PARTICLE;
 		drawTask = null;
-		occupiedBuckets = new ArrayList<ColliderBucket>();
-		collidingColliders = new ArrayList<Collider>();
+		occupiedBuckets = new ArrayList<>();
+		collidingColliders = new ArrayList<>();
 	}
 
 	/**
-	 * Returns whether this collider will interact with other collideres.
+	 * Returns whether this collider will interact with other colliders.
 	 */
 	public boolean getActive() {
 		return active;
 	}
 
 	/**
-	 * Sets whether this collider will interact with other collideres.
+	 * Sets whether this collider will interact with other colliders.
 	 */
 	public void setActive(boolean active) {
+		boolean redundant = this.active == active;
+		if (redundant) {
+			return;
+		}
 		this.active = active;
+		updateOccupiedBuckets();
 		if (active) {
-			updateOccupiedBuckets();
 			checkForCollision();
 		} else {
 			for (int i = 0; i < collidingColliders.size(); i++) {
@@ -398,9 +401,9 @@ public abstract class Collider {
 
 	/**
 	 * Translates this collider. Translating this collider so that it overlaps with
-	 * another collideres will result in {@link Collider#onCollisionEnter} being
+	 * another colliders will result in {@link Collider#onCollisionEnter} being
 	 * called for each collider. Conversely, translating this collider so that it
-	 * does not overlap with any collideres that it previously overlapped with will
+	 * does not overlap with any colliders that it previously overlapped with will
 	 * result in {@link Collider#onCollisionExit} being called for each collider.
 	 * 
 	 * @param translate vector by which to translate this collider
@@ -493,6 +496,10 @@ public abstract class Collider {
 		}
 	}
 
+	public Particle getDrawParticle() {
+		return drawParticle;
+	}
+
 	/**
 	 * Changes the particle used to draw this collider when drawing is enabled.
 	 * 
@@ -507,7 +514,6 @@ public abstract class Collider {
 	 */
 	private void assignDrawTask() {
 		drawTask = new RepeatingTask(DRAW_PERIOD) {
-
 			@Override
 			protected void run() {
 				switch (drawMode) {
@@ -521,7 +527,6 @@ public abstract class Collider {
 					break;
 				}
 			}
-
 		};
 	}
 
@@ -630,48 +635,56 @@ public abstract class Collider {
 
 	/**
 	 * Determines what collider buckets this collider should exist in to ensure
-	 * efficient and accurate collision detection. Bounds must be current to update
-	 * properly.
+	 * efficient and accurate collision detection. If this collider is inactive, it
+	 * will exist in no buckets. Bounds must be current to update properly.
 	 */
 	private void updateOccupiedBuckets() {
-		ArrayList<ColliderBucket> occupiedBucketsOld = new ArrayList<ColliderBucket>(occupiedBuckets);
-		occupiedBuckets.clear();
-		int bucketSize = ColliderBucket.BUCKET_SIZE;
+		if (active) {
+			ArrayList<ColliderBucket> occupiedBucketsOld = new ArrayList<ColliderBucket>(occupiedBuckets);
+			occupiedBuckets.clear();
 
-		int bucketXMin = (int) (xMin / bucketSize);
-		int bucketYMin = (int) (yMin / bucketSize);
-		int bucketZMin = (int) (zMin / bucketSize);
+			int bucketXMin = (int) (xMin / ColliderBucket.BUCKET_SIZE);
+			int bucketYMin = (int) (yMin / ColliderBucket.BUCKET_SIZE);
+			int bucketZMin = (int) (zMin / ColliderBucket.BUCKET_SIZE);
 
-		int bucketXMax = (int) (xMax / bucketSize);
-		int bucketYMax = (int) (yMax / bucketSize);
-		int bucketZMax = (int) (zMax / bucketSize);
+			int bucketXMax = (int) (xMax / ColliderBucket.BUCKET_SIZE);
+			int bucketYMax = (int) (yMax / ColliderBucket.BUCKET_SIZE);
+			int bucketZMax = (int) (zMax / ColliderBucket.BUCKET_SIZE);
 
-		for (int xCount = bucketXMin; xCount <= bucketXMax; xCount++) {
-			for (int yCount = bucketYMin; yCount <= bucketYMax; yCount++) {
-				for (int zCount = bucketZMin; zCount <= bucketZMax; zCount++) {
-					Location bucketAddress = new Location(world, xCount, yCount, zCount);
-					ColliderBucket bucket = ColliderBucket.bucketByAddress(bucketAddress);
-					if (bucket == null) {
-						bucket = ColliderBucket.createNewBucket(bucketAddress);
+			for (int xCount = bucketXMin; xCount <= bucketXMax; xCount++) {
+				for (int yCount = bucketYMin; yCount <= bucketYMax; yCount++) {
+					for (int zCount = bucketZMin; zCount <= bucketZMax; zCount++) {
+						Location bucketAddress = new Location(world, xCount, yCount, zCount);
+						ColliderBucket bucket = ColliderBucket.bucketByAddress(bucketAddress);
+						if (bucket == null) {
+							bucket = ColliderBucket.createNewBucket(bucketAddress);
+						}
+						boolean alreadyEncompassed = bucket.getEncompassedColliders().contains(this);
+						if (!alreadyEncompassed) {
+							bucket.encompassCollider(this);
+						}
+						occupiedBuckets.add(bucket);
 					}
-					boolean alreadyEncompassed = bucket.getEncompassedColliders().contains(this);
-					if (!alreadyEncompassed) {
-						bucket.encompassCollider(this);
-					}
-					occupiedBuckets.add(bucket);
 				}
 			}
-		}
 
-		for (int i = 0; i < occupiedBucketsOld.size(); i++) {
-			ColliderBucket bucket = occupiedBucketsOld.get(i);
-			if (!occupiedBuckets.contains(bucket)) {
+			for (int i = 0; i < occupiedBucketsOld.size(); i++) {
+				ColliderBucket bucket = occupiedBucketsOld.get(i);
+				if (!occupiedBuckets.contains(bucket)) {
+					bucket.removeCollider(this);
+					if (bucket.getEncompassedColliders().isEmpty()) {
+						Location address = bucket.getAddress();
+						ColliderBucket.deleteBucket(address);
+					}
+				}
+			}
+		} else {
+			// make it occupy no buckets so that it doesn't collide with other colliders
+			for (int i = 0; i < occupiedBuckets.size(); i++) {
+				ColliderBucket bucket = occupiedBuckets.get(i);
 				bucket.removeCollider(this);
-				if (bucket.getEncompassedColliders().isEmpty()) {
-					Location address = bucket.getAddress();
-					ColliderBucket.deleteBucket(address);
-				}
 			}
+			occupiedBuckets.clear();
 		}
 	}
 
@@ -685,7 +698,7 @@ public abstract class Collider {
 			ArrayList<Collider> neighboringColliders = bucket.getEncompassedColliders();
 			for (int j = 0; j < neighboringColliders.size(); j++) {
 				Collider neighboringCollider = neighboringColliders.get(j);
-				if (neighboringCollider != this && neighboringCollider.getActive() == true) {
+				if (neighboringCollider != this) {
 					boolean collides = collidesWith(neighboringCollider);
 					if (collidingColliders.contains(neighboringCollider)) {
 						if (!collides) {
@@ -713,7 +726,7 @@ public abstract class Collider {
 
 	/**
 	 * Responds to this collider and another collider colliding with each other.
-	 * Called when two collideres that were colliding no longer overlap each other.
+	 * Called when two colliders that were colliding no longer overlap each other.
 	 * {@code onCollisionEnter} is called from each of the bounding boxes.
 	 * 
 	 * @param other the other collider in the collision
@@ -727,8 +740,8 @@ public abstract class Collider {
 
 	/**
 	 * Responds to this collider and another collider retracting from a collision.
-	 * Called when two collideres that were colliding no longer overlap each other.
-	 * {@code onCollisionExit} is called from each of the collideres.
+	 * Called when two colliders that were colliding no longer overlap each other.
+	 * {@code onCollisionExit} is called from each of the colliders.
 	 * 
 	 * @param other the other collider in the collision
 	 */

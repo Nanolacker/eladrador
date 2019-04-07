@@ -10,15 +10,13 @@ public class Clock {
 	private static double time = 0.0;
 
 	public static void start() {
-		RepeatingTask clock = new RepeatingTask(UPDATE_PERIOD) {
-
+		RepeatingTask updateTime = new RepeatingTask(UPDATE_PERIOD) {
 			@Override
 			protected void run() {
 				time += UPDATE_PERIOD;
 			}
-
 		};
-		clock.start();
+		updateTime.start();
 	}
 
 	/**

@@ -1,4 +1,4 @@
 name: Eladrador
 version: 1.0
-main: com.eladrador.common.GamePlugin
+main: com.eladrador.impl.MMORPGPluginImpl
 api-version: 1.13

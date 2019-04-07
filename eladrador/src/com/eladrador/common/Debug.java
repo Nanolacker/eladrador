@@ -1,5 +1,6 @@
 package com.eladrador.common;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.eladrador.common.scheduling.DelayedTask;
@@ -74,15 +75,13 @@ public final class Debug {
 		String debugMessage = debugMessage(message, stackTractElement);
 		if (delayed) {
 			new DelayedTask(0.0) {
-
 				@Override
 				protected void run() {
-					MMORPGPlugin.getBukkitServer().broadcastMessage(debugMessage);
+					Bukkit.broadcastMessage(debugMessage);
 				}
-
 			}.start();
 		} else {
-			MMORPGPlugin.getBukkitServer().broadcastMessage(debugMessage);
+			Bukkit.broadcastMessage(debugMessage);
 		}
 	}
 
@@ -100,7 +99,7 @@ public final class Debug {
 	 * with.
 	 */
 	public static Player getFirstPlayerOnline() {
-		Player[] onlinePlayers = MMORPGPlugin.getBukkitServer().getOnlinePlayers().toArray(new Player[1]);
+		Player[] onlinePlayers = Bukkit.getOnlinePlayers().toArray(new Player[1]);
 		Player player = onlinePlayers[0];
 		return player;
 	}

@@ -1,4 +1,4 @@
-package com.eladrador.common.character;
+package com.eladrador.common.character._old;
 
 import java.util.UUID;
 
@@ -6,7 +6,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import com.eladrador.common.MMORPGPlugin;
+import com.eladrador.common.character.Damager;
 import com.eladrador.common.ui.TextPanel;
 
 public abstract class AbstractCharacter implements Damager {
@@ -53,8 +53,7 @@ public abstract class AbstractCharacter implements Damager {
 		this.maxHealth = maxHealth;
 		this.location = location;
 		isAlive = false;
-		nameplate = new TextPanel(22, location);
-		MMORPGPlugin.getGameManager().registerChara(this);
+		nameplate = new TextPanel(location);
 	}
 
 	/**

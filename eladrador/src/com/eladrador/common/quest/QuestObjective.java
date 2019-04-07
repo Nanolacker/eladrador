@@ -1,8 +1,6 @@
 package com.eladrador.common.quest;
 
-import java.util.HashMap;
-
-import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.quest.persistence.QuestObjectiveChainState;
 import com.eladrador.common.quest.persistence.QuestObjectiveState;
 import com.eladrador.common.quest.persistence.QuestStatus;
@@ -27,15 +25,14 @@ public abstract class QuestObjective {
 		return goal;
 	}
 
-	public int getStatusValueFor(PlayerCharacterOLD pc) {
-		HashMap<Integer, QuestStatus> stateMap = pc.getQuestStateMap();
+	public int getStatusValueFor(PlayerCharacter pc) {
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
-		if (!stateMap.containsKey(q)) {
+		QuestStatus status = pc.getQuestStatus(q);
+		if (status == null) {
 			return 0;
 		}
-		QuestStatus state = stateMap.get(q);
-		QuestPhase activePhase = state.getActivePhase();
+		QuestPhase activePhase = status.getActivePhase();
 		int activePhaseIndex = activePhase.index;
 		int targetPhaseIndex = targetPhase.index;
 		if (activePhaseIndex < targetPhaseIndex) {
@@ -44,20 +41,19 @@ public abstract class QuestObjective {
 		if (activePhaseIndex > targetPhaseIndex) {
 			return goal;
 		}
-		QuestObjectiveChainState activeChainState = state.getCurrentObjChainStates().get(parent.index);
+		QuestObjectiveChainState activeChainState = status.getCurrentObjChainStates().get(parent.index);
 		QuestObjectiveState objState = activeChainState.getObjStates().get(index);
 		return objState.getStatusValue();
 	}
 
-	public void setStatusValueFor(PlayerCharacterOLD pc, int val) {
-		HashMap<Integer, QuestStatus> stateMap = pc.getQuestStateMap();
+	public void setStatusValueFor(PlayerCharacter pc, int val) {
 		QuestPhase targetPhase = parent.parent;
 		Quest q = targetPhase.parent;
-		if (!stateMap.containsKey(q)) {
+		QuestStatus status = pc.getQuestStatus(q);
+		if (status == null) {
 			throwInactiveObjectiveException();
 		} else {
-			QuestStatus state = stateMap.get(q);
-			QuestPhase activePhase = state.getActivePhase();
+			QuestPhase activePhase = status.getActivePhase();
 			int activePhaseIndex = activePhase.index;
 			int targetPhaseIndex = targetPhase.index;
 			if (activePhaseIndex < targetPhaseIndex) {
@@ -65,7 +61,7 @@ public abstract class QuestObjective {
 			} else if (activePhaseIndex > targetPhaseIndex) {
 				throwInactiveObjectiveException();
 			} else {
-				QuestObjectiveChainState activeChainState = state.getCurrentObjChainStates().get(parent.index);
+				QuestObjectiveChainState activeChainState = status.getCurrentObjChainStates().get(parent.index);
 				QuestObjectiveState objState = activeChainState.getObjStates().get(index);
 				objState.setStatusValue(val);
 			}
@@ -76,7 +72,7 @@ public abstract class QuestObjective {
 		throw new RuntimeException("This objective must be active for the player to set its status");
 	}
 
-	public boolean isFulfilled(PlayerCharacterOLD pc) {
+	public boolean isFulfilled(PlayerCharacter pc) {
 		return getStatusValueFor(pc) == goal;
 	}
 

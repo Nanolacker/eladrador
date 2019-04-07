@@ -1,5 +1,6 @@
 package com.eladrador.common.scheduling;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -25,18 +26,13 @@ public abstract class DelayedTask extends AbstractTask {
 
 	@Override
 	protected void scheduleBukkitTask() {
-		BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
-		Plugin plugin = MMORPGPlugin.getPlugin();
 		long delayInMilis = (long) (getDelay() * 20);
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				DelayedTask.this.run();
-				active = false;
-			}
-
+		Runnable runnable = () -> {
+			DelayedTask.this.run();
+			active = false;
 		};
+		BukkitScheduler scheduler = Bukkit.getScheduler();
+		Plugin plugin = MMORPGPlugin.getInstance();
 		taskID = scheduler.scheduleSyncDelayedTask(plugin, runnable, delayInMilis);
 	}
 

@@ -38,7 +38,7 @@ public class CharacterEntityMovementSynchronizer {
 	 * The mode by which this {@code CharacterEntityMovementSynchronizer} will
 	 * operate.
 	 */
-	private AbstractCharacter character;
+	private GameCharacter character;
 	private Entity entity;
 	private final MovementSynchronizeMode mode;
 	private RepeatingTask syncTask;
@@ -47,7 +47,7 @@ public class CharacterEntityMovementSynchronizer {
 	 * Be sure to invoke {@code setEnabled} to enable this
 	 * {@code CharacterEntityMovementSynchronizer}.
 	 */
-	public CharacterEntityMovementSynchronizer(AbstractCharacter character, Entity entity,
+	public CharacterEntityMovementSynchronizer(GameCharacter character, Entity entity,
 			MovementSynchronizeMode mode) {
 		this.character = character;
 		this.entity = entity;

@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import org.bukkit.Material;
 
 import com.eladrador.common.character.CharacterEffect;
-import com.eladrador.common.character.PlayerCharacterOLD;
-
-import character.PlayerCharacter;
+import com.eladrador.common.character.PlayerCharacter;
 
 public class EquipmentItem extends GameItem {
 

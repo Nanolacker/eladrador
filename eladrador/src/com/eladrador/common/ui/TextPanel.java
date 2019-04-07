@@ -147,7 +147,7 @@ public class TextPanel {
 							}
 							idealEntityLoc.subtract(0, LINE_SEPEARATION_DISTANCE, 0);
 						}
-					} else {
+					} else if (!text.isEmpty()) {
 						spawnEntities();
 					}
 				} else if (!playerNearby && spawned) {
@@ -277,6 +277,7 @@ public class TextPanel {
 	private void removeEntities() {
 		int numEntities = entities.size();
 		for (int i = 0; i < numEntities; i++) {
+			// always take 0 because the entity list is being modified
 			removeSingleEntity(0);
 		}
 		entities.clear();

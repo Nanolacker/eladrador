@@ -4,15 +4,12 @@ import java.util.HashMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
-import com.eladrador.common.character.AbstractCharacter;
 import com.eladrador.common.character.CharacterCollider;
-import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.character.GameCharacter;
+import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.physics.Collider;
-
-import character.PlayerCharacter;
 
 /**
  * Represents an area of interest within game. Size can range from that of small
@@ -77,11 +74,12 @@ public class Zone {
 		@Override
 		protected void onCollisionEnter(Collider other) {
 			if (other instanceof CharacterCollider) {
-				AbstractCharacter character = ((CharacterCollider) other).getCharacter();
-				if (character instanceof PlayerCharacterOLD) {
-					Zone playerZone = ((PlayerCharacterOLD) character).getZone();
+				GameCharacter character = ((CharacterCollider) other).getCharacter();
+				if (character instanceof PlayerCharacter) {
+					PlayerCharacter pc = (PlayerCharacter) character;
+					Zone playerZone = pc.getZone();
 					if (playerZone != this.zone) {
-						((PlayerCharacterOLD) character).setZone(zone);
+						pc.setZone(zone);
 					}
 				}
 			}

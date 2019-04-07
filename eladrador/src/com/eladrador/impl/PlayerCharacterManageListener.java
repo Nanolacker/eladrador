@@ -1,7 +1,6 @@
 package com.eladrador.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,8 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.eladrador.common.MMORPGPlugin;
-import com.eladrador.common.character.PlayerCharacterOLD;
+import com.eladrador.common.GameManager;
+import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.player.PlayerBackground;
 import com.eladrador.common.player.PlayerCharacterPersistence;
 import com.eladrador.common.player.PlayerCharacterSaveData;
@@ -51,7 +50,7 @@ public class PlayerCharacterManageListener implements Listener {
 	/*
 	 * TEST STUFF
 	 */
-	World spawnWorld = MMORPGPlugin.getGameManager().worldForName("world");
+	World spawnWorld = GameManager.worldForName("world");
 	Location spawn = new Location(spawnWorld, 46.5, 69, 236.5);
 	Zone testZone = new Zone(spawnWorld, "Melcher", ChatColor.GREEN, 1);
 	PlayerBackground background = new PlayerBackground("Dustbell", testZone, spawn);
@@ -181,7 +180,7 @@ public class PlayerCharacterManageListener implements Listener {
 		if (pcCreated) {
 			PlayerCharacterSaveData data = PlayerCharacterPersistence.retrieveData(player, saveSlot);
 			PlayerBackground background = PlayerBackground.forName(data.getPlayerBackgroundName());
-			int level = PlayerCharacterOLD.levelForXP(data.getXp());
+			int level = PlayerCharacter.levelForXp(data.getXp());
 			PlayerClass playerClass = PlayerClass.forName(data.getPlayerClassName());
 			Zone zone = Zone.forName(data.getZoneName());
 			pcDescription = new ArrayList<String>();
@@ -205,7 +204,7 @@ public class PlayerCharacterManageListener implements Listener {
 			protected void onToggle(Player player) {
 				clickNoise.play(player);
 				if (!pcCreated) {
-					PlayerCharacterOLD.createNew(player, saveSlot, background, playerClass);
+					PlayerCharacter.createNew(player, saveSlot, background, playerClass);
 				}
 				enterWorld(player, saveSlot);
 				InteractableItemRegistry.unregister(this);
@@ -256,9 +255,8 @@ public class PlayerCharacterManageListener implements Listener {
 			@Override
 			protected void onToggle(Player player) {
 				clickNoise.play(player);
-				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
-				pc.addXp(10);
-				// pc.openQuestLog();
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				pc.openQuestLog();
 			}
 		};
 		button.setToggleableByHold(true);
@@ -275,8 +273,8 @@ public class PlayerCharacterManageListener implements Listener {
 			@Override
 			protected void onToggle(Player player) {
 				clickNoise.play(player);
-				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
-				// pc.openSkillTree();
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+				pc.openSkillTree();
 			}
 		};
 	}
@@ -291,7 +289,7 @@ public class PlayerCharacterManageListener implements Listener {
 			@Override
 			protected void onToggle(Player player) {
 				clickNoise.play(player);
-				PlayerCharacterOLD pc = PlayerCharacterOLD.forBukkitPlayer(player);
+				PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
 				pc.saveData();
 				setup(player);
 			}
@@ -309,7 +307,7 @@ public class PlayerCharacterManageListener implements Listener {
 	private void onPlayerQuit(PlayerQuitEvent event) {
 		event.setQuitMessage(null);
 		Player player = event.getPlayer();
-		PlayerCharacterOLD pc = (PlayerCharacterOLD) PlayerCharacterOLD.forBukkitPlayer(player);
+		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
 		if (pc != null) {
 			pc.saveData();
 		}
@@ -328,8 +326,8 @@ public class PlayerCharacterManageListener implements Listener {
 	}
 
 	private void enterWorld(Player player, int saveSlot) {
-		PlayerCharacterOLD pc = PlayerCharacterOLD.retrieve(player, saveSlot);
-		pc.setBukkitPlayer(player);
+		PlayerCharacter pc = PlayerCharacter.retrieve(player, saveSlot);
+		pc.linkPlayer();
 		PlayerInventory inventory = player.getInventory();
 		inventory.clear();
 		inventory.setItem(7, openQuestLogButton.itemStack());

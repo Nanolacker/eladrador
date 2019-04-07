@@ -1,4 +1,4 @@
-package com.eladrador.common.character;
+package com.eladrador.common.character._old;
 
 import java.util.HashMap;
 
@@ -9,6 +9,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 import com.eladrador.common.MMORPGPlugin;
+import com.eladrador.common.character.CharacterCollider;
+import com.eladrador.common.character.CharacterEntityMovementSynchronizer;
 import com.eladrador.common.character.CharacterEntityMovementSynchronizer.MovementSynchronizeMode;
 import com.eladrador.common.item.EquipmentItem;
 import com.eladrador.common.item.MainHandItem;
@@ -24,7 +26,7 @@ import com.eladrador.common.quest.persistence.QuestStatus;
 import com.eladrador.common.utils.MathUtils;
 import com.eladrador.common.zone.Zone;
 
-public class PlayerCharacterOLD extends AbstractCharacter {
+class PlayerCharacterOLD extends AbstractCharacter {
 
 	private static final HashMap<Player, PlayerCharacterOLD> playerCharacterMap = new HashMap<Player, PlayerCharacterOLD>();
 	private static final double[] XP_CHART = { 25, 50 };
@@ -96,17 +98,18 @@ public class PlayerCharacterOLD extends AbstractCharacter {
 		int maxMana = 15;
 
 		PlayerCharacterSaveData data = new PlayerCharacterSaveData(bukkitPlayer.getName(), saveSlot,
-				background.getName(), playerClass.getName(), new HashMap<Integer, QuestStatus>(),
-				background.getStartZone().getName(), 0, maxHealth, maxHealth, maxMana, maxMana,
-				new PlayerAttributes(), background.getStartLocation());
+				background.getName(), playerClass.getName(), new HashMap<String, QuestStatus>(),
+				background.getStartZone().getName(), 0, maxHealth, maxHealth, maxMana, maxMana, new PlayerAttributes(),
+				background.getStartLocation());
 
 		PlayerCharacterPersistence.storeData(data);
 	}
 
 	/**
 	 * Returns the stored {@code PlayerCharacter} that corresponds to the specified
-	 * {@code Player} and save slot. {@link PlayerCharacterOLD#setBukkitPlayer(Player)}
-	 * must be invoked on the returned {@code PlayerCharacter}.
+	 * {@code Player} and save slot.
+	 * {@link PlayerCharacterOLD#setBukkitPlayer(Player)} must be invoked on the
+	 * returned {@code PlayerCharacter}.
 	 */
 	public static PlayerCharacterOLD retrieve(Player bukkitPlayer, int saveSlot) {
 		PlayerCharacterSaveData data = PlayerCharacterPersistence.retrieveData(bukkitPlayer, saveSlot);
@@ -116,9 +119,9 @@ public class PlayerCharacterOLD extends AbstractCharacter {
 		World world = MMORPGPlugin.getGameManager().worldForName(data.getWorldName());
 		Location location = new Location(world, data.getLocX(), data.getLocY(), data.getLocZ(), data.getYaw(),
 				data.getPitch());
-		return new PlayerCharacterOLD(bukkitPlayer, data.getSaveSlot(), background, playerClass, data.getQuestStateMap(),
-				zone, data.getXp(), data.getMaxHealth(), data.getCurrentHealth(), data.getMaxMana(),
-				data.getCurrentMana(), data.getAttributes(), location);
+		return new PlayerCharacterOLD(bukkitPlayer, data.getSaveSlot(), background, playerClass,
+				data.getQuestStateMap(), zone, data.getXp(), data.getMaxHealth(), data.getCurrentHealth(),
+				data.getMaxMana(), data.getCurrentMana(), data.getAttributes(), location);
 	}
 
 	/**
@@ -157,6 +160,7 @@ public class PlayerCharacterOLD extends AbstractCharacter {
 	 */
 	public void setBukkitPlayer(Player bukkitPlayer) {
 		this.bukkitPlayer = bukkitPlayer;
+		Location location = getLocation();
 		bukkitPlayer.teleport(location);
 		Location hitboxCenter = location.clone().add(0, 1, 0);
 		movementSyncer = new CharacterEntityMovementSynchronizer(this, bukkitPlayer,

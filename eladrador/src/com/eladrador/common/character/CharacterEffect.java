@@ -1,11 +1,9 @@
 package com.eladrador.common.character;
 
-import character.IGameCharacter;
-
 public interface CharacterEffect {
 
-	public void onApply(IGameCharacter character);
+	public void onApply(GameCharacter character);
 
-	public void onRemove(IGameCharacter character);
+	public void onRemove(GameCharacter character);
 
 }

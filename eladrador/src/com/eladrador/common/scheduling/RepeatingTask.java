@@ -1,5 +1,6 @@
 package com.eladrador.common.scheduling;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -24,17 +25,10 @@ public abstract class RepeatingTask extends AbstractTask {
 
 	@Override
 	protected void scheduleBukkitTask() {
-		BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
-		Plugin plugin = MMORPGPlugin.getPlugin();
 		long periodInMilis = (long) (period * 20);
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				RepeatingTask.this.run();
-			}
-
-		};
+		Runnable runnable = () -> RepeatingTask.this.run();
+		BukkitScheduler scheduler = Bukkit.getScheduler();
+		Plugin plugin = MMORPGPlugin.getInstance();
 		taskID = scheduler.scheduleSyncRepeatingTask(plugin, runnable, 0, periodInMilis);
 	}
 
@@ -54,7 +48,7 @@ public abstract class RepeatingTask extends AbstractTask {
 	public void setPeriod(double period) {
 		this.period = period;
 		if (active) {
-			BukkitScheduler scheduler = MMORPGPlugin.getScheduler();
+			BukkitScheduler scheduler = Bukkit.getScheduler();
 			scheduler.cancelTask(taskID);
 			double serverTime = Clock.getTime();
 			double executionTime = exeTime;
@@ -63,16 +57,9 @@ public abstract class RepeatingTask extends AbstractTask {
 			}
 			long timeUntilExecutionInMilis = (long) ((executionTime - serverTime) * 20);
 			long periodInMilis = (long) (period * 20);
-			Runnable runnable = new Runnable() {
-
-				@Override
-				public void run() {
-					RepeatingTask.this.run();
-				}
-
-			};
-			taskID = scheduler.scheduleSyncRepeatingTask(MMORPGPlugin.getPlugin(), runnable, timeUntilExecutionInMilis,
-					periodInMilis);
+			Runnable runnable = () -> RepeatingTask.this.run();
+			Plugin plugin = MMORPGPlugin.getInstance();
+			taskID = scheduler.scheduleSyncRepeatingTask(plugin, runnable, timeUntilExecutionInMilis, periodInMilis);
 		}
 	}
 
