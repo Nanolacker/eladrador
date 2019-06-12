@@ -3,11 +3,14 @@ package com.eladrador.common.character;
 import java.util.HashMap;
 
 import org.apache.commons.lang3.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
 import com.eladrador.common.Debug;
 import com.eladrador.common.GameManager;
@@ -22,8 +25,10 @@ import com.eladrador.common.player.PlayerCharacterListener;
 import com.eladrador.common.player.PlayerCharacterPersistence;
 import com.eladrador.common.player.PlayerCharacterSaveData;
 import com.eladrador.common.player.PlayerClass;
+import com.eladrador.common.player.PlayerQuestManager;
 import com.eladrador.common.quest.Quest;
-import com.eladrador.common.quest.persistence.QuestStatus;
+import com.eladrador.common.quest.QuestObjective;
+import com.eladrador.common.quest.QuestStatus;
 import com.eladrador.common.utils.MathUtils;
 import com.eladrador.common.zone.Zone;
 
@@ -58,10 +63,7 @@ public class PlayerCharacter extends GameCharacter {
 	private PlayerBackground background;
 	private PlayerClass playerClass;
 	private PlayerAttributes attributes;
-	/**
-	 * Keys are names of quests.
-	 */
-	private HashMap<String, QuestStatus> questStatusMap;
+	private PlayerQuestManager questManager;
 	private Zone zone;
 	private double xp;
 	private double maxMana;
@@ -83,7 +85,6 @@ public class PlayerCharacter extends GameCharacter {
 		this.saveSlot = saveSlot;
 		this.background = background;
 		this.playerClass = playerClass;
-		this.questStatusMap = questStatusMap;
 		this.zone = zone;
 		this.xp = xp;
 		super.setCurrentHealth(currentHealth);
@@ -288,9 +289,23 @@ public class PlayerCharacter extends GameCharacter {
 		return questStatusMap.get(quest.getName());
 	}
 
-	public void openQuestLog() {
-		Debug.log("OPENING QUEST LOG");
-		// TODO
+	public QuestObjective getTrackedQuestObjective() {
+		return trackedQuestObjective;
+	}
+
+	public void setTrackedQuestObjective(QuestObjective objective) {
+		trackedQuestObjective = objective;
+		sendMessage(objective.getDescription());
+
+		Location objectiveLocation = objective.getLocation();
+		bukkitPlayer.setCompassTarget(objectiveLocation);
+		updateQuestScoreboard();
+	}
+
+	private void updateQuestScoreboard() {
+		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+		Scoreboard scoreboard = scoreboardManager.getNewScoreboard();
+
 	}
 
 	public Zone getZone() {

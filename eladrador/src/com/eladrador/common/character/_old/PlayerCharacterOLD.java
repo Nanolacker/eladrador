@@ -22,7 +22,7 @@ import com.eladrador.common.player.PlayerCharacterListener;
 import com.eladrador.common.player.PlayerCharacterPersistence;
 import com.eladrador.common.player.PlayerCharacterSaveData;
 import com.eladrador.common.player.PlayerClass;
-import com.eladrador.common.quest.persistence.QuestStatus;
+import com.eladrador.common.quest.QuestStatus;
 import com.eladrador.common.utils.MathUtils;
 import com.eladrador.common.zone.Zone;
 

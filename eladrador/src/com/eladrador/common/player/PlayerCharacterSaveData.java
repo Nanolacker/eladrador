@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.bukkit.Location;
 
 import com.eladrador.common.quest.Quest;
-import com.eladrador.common.quest.persistence.QuestStatus;
+import com.eladrador.common.quest.QuestStatus;
 
 /**
  * A class used for storing PlayerCharacter data.

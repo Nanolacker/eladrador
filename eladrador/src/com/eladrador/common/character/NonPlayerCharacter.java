@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.bukkit.Location;
-import org.bukkit.World;
-
 import com.eladrador.common.player.Players;
 import com.eladrador.common.scheduling.RepeatingTask;
 import com.eladrador.common.ui.TextPanel;
@@ -19,7 +17,7 @@ public class NonPlayerCharacter extends GameCharacter {
 
 	private static final ArrayList<NonPlayerCharacter> npcs = new ArrayList<>();
 	private static final double DEFAULT_SPAWN_RADIUS = 50.0;
-	private static final double SPAWN_UPDATE_PERIOD = 0.5;
+	private static final double SPAWN_TASK_PERIOD = 0.5;
 
 	private boolean spawned;
 	private boolean tryingToSpawn;
@@ -30,7 +28,7 @@ public class NonPlayerCharacter extends GameCharacter {
 	}
 
 	private static final void startSpawnTask() {
-		RepeatingTask spawnTask = new RepeatingTask(SPAWN_UPDATE_PERIOD) {
+		RepeatingTask spawnTask = new RepeatingTask(SPAWN_TASK_PERIOD) {
 			@Override
 			public void run() {
 				for (int i = 0; i < npcs.size(); i++) {

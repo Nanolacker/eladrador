@@ -1,5 +1,7 @@
 package com.eladrador.common.player;
 
+import java.util.ArrayList;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -14,12 +16,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.util.Vector;
 
-import com.eladrador.common.Debug;
 import com.eladrador.common.character.PlayerCharacter;
 import com.eladrador.common.physics.Collider;
 import com.eladrador.common.physics.Physics;
 import com.eladrador.common.physics.Ray;
 import com.eladrador.common.physics.RaycastInfo;
+import com.eladrador.common.scheduling.DelayedTask;
 
 public class PlayerCharacterListener implements Listener {
 
@@ -27,7 +29,19 @@ public class PlayerCharacterListener implements Listener {
 	 * The distance from which a player can interact with an object by
 	 * right-clicking.
 	 */
-	private static final double PLAYER_INTERACT_DISTANCE = 4.0;
+	private static final double PLAYER_INTERACT_DISTANCE = 5.0;
+	/**
+	 * The time that must be waited between consecutive interactions with an entity.
+	 * Not implementing a cooldown results in two interactions being fired
+	 * simultaneously when the player right-clicks once due to a glitch with Bukkit.
+	 */
+	private static final double INTERACT_ENTITY_COOLDOWN_SECONDS = 0.05;
+
+	private final ArrayList<PlayerCharacter> interactEntityCooldownList;
+
+	public PlayerCharacterListener() {
+		interactEntityCooldownList = new ArrayList<>();
+	}
 
 	@EventHandler
 	private void onHotbarScroll(PlayerItemHeldEvent event) {
@@ -71,23 +85,38 @@ public class PlayerCharacterListener implements Listener {
 		if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
 			return;
 		}
-		if (PlayerCharacter.bukkitPlayerIsAttachedToPlayerCharacter(player)) {
-			event.setCancelled(true);
-			interact(player);
+		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+		if (pc == null) {
+			return;
 		}
+		event.setCancelled(true);
+		interact(pc);
 	}
 
 	@EventHandler
 	private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
 		Player player = event.getPlayer();
-		if (PlayerCharacter.bukkitPlayerIsAttachedToPlayerCharacter(player)) {
-			event.setCancelled(true);
-			interact(player);
+		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+		if (pc == null) {
+			return;
 		}
+		event.setCancelled(true);
+		if (interactEntityCooldownList.contains(pc)) {
+			return;
+		}
+		interactEntityCooldownList.add(pc);
+		new DelayedTask(INTERACT_ENTITY_COOLDOWN_SECONDS) {
+			@Override
+			public void run() {
+				interactEntityCooldownList.remove(pc);
+			}
+		}.start();
+
+		interact(pc);
 	}
 
-	private void interact(Player player) {
-		PlayerCharacter pc = PlayerCharacter.forBukkitPlayer(player);
+	private void interact(PlayerCharacter pc) {
+		Player player = pc.getBukkitPlayer();
 
 		Location loc = player.getLocation().add(0.0, player.getEyeHeight(), 0.0);
 		Vector dir = loc.getDirection();

@@ -15,7 +15,6 @@ import com.eladrador.common.zone.Zone;
 
 public final class GameManager {
 
-	private static final ArrayList<Quest> quests;
 	/**
 	 * Keys are the names of the worlds.
 	 */
@@ -25,25 +24,10 @@ public final class GameManager {
 	private static final ArrayList<NonPlayerCharacter> nonPlayerCharacters;
 
 	static {
-		quests = new ArrayList<>();
 		worldMap = new HashMap<>();
 		zoneMap = new HashMap<>();
 		playerCharacterMap = new HashMap<>();
 		nonPlayerCharacters = new ArrayList<>();
-	}
-
-	/**
-	 * Registers a quest so that it can be used properly. All quests to be used must
-	 * be registered here.
-	 * 
-	 * @param quest the quest to register
-	 */
-	public static void registerQuest(Quest quest) {
-		quests.add(quest);
-	}
-
-	public static ArrayList<Quest> getQuests() {
-		return quests;
 	}
 
 	/**

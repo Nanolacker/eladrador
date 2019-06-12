@@ -1,27 +1,33 @@
 package com.eladrador.common.quest;
 
-import java.util.ArrayList;
+public class QuestPhase {
 
-public abstract class QuestPhase {
+	private final QuestObjectiveChain[] objectiveChains;
+	private transient Quest quest;
+	private transient int index;
 
-	Quest parent;
-	int index;
-	private ArrayList<QuestObjectiveChain> objChains;
-	private int objChainCount;
-
-	protected QuestPhase() {
-		objChains = new ArrayList<QuestObjectiveChain>();
-		objChainCount = 0;
+	public QuestPhase(QuestObjectiveChain[] objectiveChains) {
+		this.objectiveChains = objectiveChains;
 	}
 
-	public ArrayList<QuestObjectiveChain> getObjChains() {
-		return objChains;
+	public QuestObjectiveChain[] getObjectiveChains() {
+		return objectiveChains;
 	}
 
-	protected void registerObjChain(QuestObjectiveChain objChain) {
-		objChain.index = objChainCount;
-		objChainCount++;
-		objChains.add(objChain);
+	public Quest getQuest() {
+		return quest;
+	}
+
+	void setQuest(Quest quest) {
+		this.quest = quest;
+	}
+
+	int getIndex() {
+		return index;
+	}
+
+	void setIndex(int index) {
+		this.index = index;
 	}
 
 }
